@@ -13,6 +13,7 @@ df_h <- read_delim(gr_hist, delim = "|", quote = "",col_names = TRUE, na = c("",
 df_h <- df_h %>%
   mutate(crs_combo = ifelse(is.na(StateCourseName), CourseTitle,StateCourseName))
 
+
 table(df_h$ReportSchoolYear)
 ########
 ###LOOK AT STATE COURSE FILE COVERAGE
@@ -158,10 +159,12 @@ training_set_b <- training_set_a %>%
   bind_rows(comp_cleanup, sci_clean, eng_clean) %>%
   mutate(ospi_sub = if_else(ospi_sub == "Computer and Information Sciences", "elective", ospi_sub))
 
+
 # delete bad labels from cnn output...
 training_set_b %>%
   filter(str_detect(crs_copy, "american") & str_detect(ospi_sub, "Math")) %>%
   mutate(crs_copy = str_remove(crs_copy, "apex"))
+
 
 table(training_set_b$ospi_sub)
 
