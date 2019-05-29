@@ -1,7 +1,9 @@
 library(tidyverse)
 
 # Add school type
-cnn_fn <- "~/data/cnn_result_names4.csv"
+
+cnn_fn <- "~/data/cnn_result_names_5.csv"
+
 cnn_res <- read_csv(cnn_fn, col_names = TRUE) 
 
 # cnn_res <- round(cnn_res, 4)
@@ -25,7 +27,9 @@ names(cnn_res)
 table(cnn_res$Y)
 
 class_check <- cnn_res %>% 
-  filter(Y == "5", pred_class == "4" )
+
+  filter(pred_class == "0" )
+
 
 str(class_check)
 library(stringdist)
