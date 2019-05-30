@@ -9,13 +9,6 @@ library(data.table)
 gr_hist <- "~/data/cadrs/hsCourses.txt"
 df_h <- read_delim(gr_hist, delim = "|", quote = "",col_names = TRUE, na = c("", "NA", "NULL")) 
 
-# state/district course name combination
-# if state course exists use that otherwise use the district course code
-df_h <- df_h %>%
-  mutate(crs_combo = ifelse(is.na(StateCourseName), CourseTitle,StateCourseName))
-
-table(df_h$ReportSchoolYear)
-
 ######
 # STATE COURSE CATALOGUE FILES YEARLY
 # Load xlsx file from ospi
@@ -218,7 +211,7 @@ unique_labels <- function(years, districts) {
   output_df <- unique(do.call(rbind.data.frame, output))
 }
 
-cadrs_unique <- unique_labels(years = years_sub, districts = dist_sub)
+cadrs_unique <- unique_labels(years = years_sub, districts = districts_sub)
 
 # attach course descriptions from ospi
 ospi_df <- bind_rows(ospi_crs17 %>% mutate(year = "2017"), 
@@ -231,9 +224,8 @@ cadrs_training <- inner_join(cadrs_unique, ospi_df, by = c("StateCourseCode" = "
 
 cadrs_training <- cadrs_training %>%
   select(-ReportSchoolYear) %>%
-  unique()
+  unique() %>%
+  rename(ap_ib=Type..AP.IB., subject = Subject.Area.Code)
 
-table(cadrs_training$cadrs)
-
-# write_csv(cadrs_training_17, path = "~/data/cadrs/cadrs_training_17_test.csv")
+write_csv(cadrs_training, path = "~/data/cadrs/cadrs_training.csv")
 ##########
