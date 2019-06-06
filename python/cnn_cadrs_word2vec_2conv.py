@@ -1,12 +1,11 @@
 import warnings
-warnings.filterwarnings('ignore')
 
 import csv
 import json
 import numpy as np
 import pandas as pd
 
-import matplotlib.pyplot as plt
+import matplotlib as plt
 
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
@@ -46,7 +45,6 @@ name_save = 'cadrs_cnn_two_branches.hdf5'
 
 
 word_vector_dim = int(3e2)
-do_static = False
 nb_filters = 150
 filter_size_a = 3
 filter_size_b = 4
@@ -105,7 +103,7 @@ text.apply(lambda x: len(x.split(' '))).sum()
 text = text.astype(str).values.tolist() # list of text samples
 
 ##### Tokenize
-maxlen = max(num_words) + 1  # max number of words in a title to consider
+maxlen = max(num_words) + 1  # max number of words in a description to consider
 
 tokenizer = Tokenizer()
 tokenizer.fit_on_texts(text)
@@ -127,10 +125,10 @@ labels = to_categorical(np.asarray(labels))
 print('Shape of data tensor:', text_tok.shape)
 print('Shape of label tensor:', labels.shape)
 
+# split training data into test, validation
 x_train, x_val, y_train, y_val = train_test_split(text_tok, labels, test_size=0.2, random_state = 42)
 
-####
-
+# Load google's pretrained model
 word_vectors = KeyedVectors.load_word2vec_format(path_root + 'GoogleNews-vectors-negative300.bin', binary=True)
 
 word_vector_dim=300
@@ -217,38 +215,7 @@ model.compile(loss='binary_crossentropy',
               metrics = ['accuracy'])
 
 model.summary()
-####
-# in test mode, we should set the 'learning_phase' flag to 0 (we don't want to use dropout)
-get_doc_embedding = K.function([model.layers[0].input,K.learning_phase()],
-                               [model.layers[9].output])
 
-n_plot = 100
-
-doc_emb = get_doc_embedding([np.array(x_test[:n_plot]),0])[0]
-
-my_pca = PCA(n_components=10)
-my_tsne = TSNE(n_components=2,perplexity=10) #https://lvdmaaten.github.io/tsne/
-doc_emb_pca = my_pca.fit_transform(doc_emb) 
-doc_emb_tsne = my_tsne.fit_transform(doc_emb_pca)
-
-labels_plt = y_test[:n_plot]
-my_colors = ['blue','red']
-
-fig, ax = plt.subplots()
-
-for label in list(set(labels_plt)):
-    idxs = [idx for idx,elt in enumerate(labels_plt) if elt==label]
-    ax.scatter(doc_emb_tsne[idxs,0], 
-               doc_emb_tsne[idxs,1], 
-               c = my_colors[label],
-               label=str(label),
-               alpha=0.7,
-               s=10)
-
-ax.legend(scatterpoints=1)
-fig.suptitle('t-SNE visualization of CNN-based doc embeddings \n (first 100 courses from test set)',fontsize=10)
-fig.set_size_inches(6,4)
-#########
 early_stopping = EarlyStopping(monitor='val_acc', # go through epochs as long as accuracy on validation set increases
                                patience=my_patience,
                                mode='max')
@@ -265,3 +232,39 @@ model.fit(x_train,
           epochs = nb_epoch,
           validation_data = (x_val, y_val),
           callbacks = [early_stopping,checkpointer])
+
+# plot
+get_doc_embedding = K.function([model.layers[0].input,K.learning_phase()],
+                               [model.layers[9].output])
+
+n_plot = 50
+
+doc_emb = get_doc_embedding([np.array(x_val[:n_plot]),0])[0]
+
+my_pca = PCA(n_components=10)
+my_tsne = TSNE(n_components=2,perplexity=10) #https://lvdmaaten.github.io/tsne/
+doc_emb_pca = my_pca.fit_transform(doc_emb) 
+doc_emb_tsne = my_tsne.fit_transform(doc_emb_pca)
+
+labels_plt = y_val[:n_plot]
+my_colors = ['blue','red']
+
+fig, ax = plt.subplots()
+
+
+labels_plt = labels_plt[:,0].astype(int)
+labels_plt
+
+for label in list(set(labels_plt)):
+    idxs = [idx for idx,elt in enumerate(labels_plt) if elt==label]
+    ax.scatter(doc_emb_tsne[idxs,0], 
+               doc_emb_tsne[idxs,1], 
+               c = my_colors[label],
+               label=str(label),
+               alpha=0.7,
+               s=10)
+
+ax.legend(scatterpoints=1)
+fig.suptitle('t-SNE visualization of CNN-based course embeddings \n (first 50 courses from test set)',fontsize=10)
+fig.set_size_inches(6,4)
+# fig.savefig(path_to_plot + 'doc_embeddings_init.pdf',bbox_inches='tight')
