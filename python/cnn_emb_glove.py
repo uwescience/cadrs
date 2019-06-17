@@ -109,6 +109,7 @@ glove_dir = '/home/joseh/data/glove.6B'
 
 embeddings_index = {}
 f = open(os.path.join(glove_dir, 'glove.6B.100d.txt'))
+
 for line in f:
     values = line.split()
     word = values[0]
