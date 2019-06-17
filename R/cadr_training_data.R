@@ -147,7 +147,7 @@ opp_labels_d_14 <- inner_join(total_unique_14, dups_14) %>%
 ## append 
 opp_labels_d <- bind_rows(opp_labels_d_17,opp_labels_d_16, opp_labels_d_15, opp_labels_d_14)
 
-write_csv(opp_labels_d, path = "~/data/cadrs/cadrs_dupp_labels.csv")
+# write_csv(opp_labels_d, path = "~/data/cadrs/cadrs_dupp_labels.csv")
 
 rm(list = ls(pattern = "dups_"))
 rm(list = ls(pattern = "opp_"))
@@ -173,7 +173,11 @@ dist_all <- c(
 # Districts with lowest known data errors
 districts_sub <- c(
   "Auburn School District",
-  "Highline School District"
+  "Federal Way School District",
+  "Highline School District",
+  "Renton School District",
+  "Kent School District",
+  "Tukwila School District"
 ) 
 
 # years 
@@ -216,16 +220,173 @@ cadrs_unique <- unique_labels(years = years_sub, districts = districts_sub)
 # attach course descriptions from ospi
 ospi_df <- bind_rows(ospi_crs17 %>% mutate(year = "2017"), 
                      ospi_crs16 %>% mutate(year = "2016"))
+names(ospi_df)
 
-cadrs_training <- inner_join(cadrs_unique, ospi_df, by = c("StateCourseCode" = "State.Course.Code", 
-                                                           "ReportSchoolYear" = "year")) %>%
+cadrs_training <- left_join(ospi_df, cadrs_unique, by = c("State.Course.Code" = "StateCourseCode", 
+                                                          "year" = "ReportSchoolYear")) %>%
   data.frame()
 
-
+sum(is.na(cadrs_training$cadrs))/ length(cadrs_training$cadrs)
+# 73% missing label
+# some courses not offered in these districts
 cadrs_training <- cadrs_training %>%
-  select(-ReportSchoolYear) %>%
+  select(-year) %>%
   unique() %>%
   rename(ap_ib=Type..AP.IB., subject = Subject.Area.Code)
 
-write_csv(cadrs_training, path = "~/data/cadrs/cadrs_training.csv")
-##########
+# write_csv(cadrs_training, path = "~/data/cadrs/cadrs_training.csv")
+
+# try adding more districts 
+# ignoring errors 
+cadrs_unique_all <- unique_labels(years = years_sub, districts = dist_all)
+
+names(ospi_df)
+
+cadrs_training_all <- left_join(ospi_df, cadrs_unique_all, by = c("State.Course.Code" = "StateCourseCode", 
+                                                          "year" = "ReportSchoolYear")) %>%
+  data.frame()
+
+sum(is.na(cadrs_training_all$cadrs))/ length(cadrs_training_all$cadrs)
+
+cadrs_training_all <- cadrs_training_all %>%
+  select(-year) %>%
+  unique()
+# save with NAs 
+#write_csv(cadrs_training_all, path = "~/data/cadrs/cadrs_training_all.csv")
+#Try to clean-up NAs - manual clean up 
+names(cadrs_training)
+
+cadrs_training_sub <- cadrs_training %>% 
+  filter(is.na(cadrs))
+
+cadrs_training_sub %>%
+  select(content_area) %>%
+  table()
+
+########
+# using math key-words
+math_inc <- c(
+  "Trigonometry",
+  "Math Analysis",
+  "Linear Algebra",
+  "Calculus"
+)
+
+math_x <- c(
+  "Part 1",
+  "Part 2",
+  "Other",
+  "General",
+  "Business Math",
+  "Particular Topics"
+)
+
+math_clean <- cadrs_training %>%
+  filter(content_area == "Mathematics") %>%
+  mutate(cadrs = if_else(is.na(cadrs) & str_detect(Name, paste(math_inc, collapse = '|')), 1 ,cadrs),
+         cadrs = if_else(str_detect(Name, paste(math_x, collapse = '|')), 0 ,cadrs)) %>%
+  filter(!is.na(cadrs))
+
+# foreign language 
+# all but these key_words
+lang_x <- c(
+  "Field Experience", 
+  "Conversation and Culture",
+  "Other"
+)
+
+lang_inc <- c(
+  "Japanese V",
+  "Portuguese I",
+  "Portuguese II",
+  "Portuguese III",
+  "Portuguese IV",
+  "Latin IV"
+)
+
+lan_clean <- cadrs_training %>%
+  filter(content_area == "Foreign Language and Literature") %>%
+  mutate(cadrs = if_else(is.na(cadrs) & str_detect(Name, paste(lang_x, collapse = '|')), 0 ,1),
+         cadrs = if_else(str_detect(Name, paste(lang_inc, collapse = '|')), 1 ,cadrs)) %>%
+  filter(!is.na(cadrs))
+
+# sociology
+
+soc_inc <- c(
+  "IB",
+  "AP"
+)
+
+soc_x <- c(
+  "Other"
+)
+
+soc_clean <- cadrs_training %>%
+  filter(content_area == "Social Sciences and History") %>%
+  mutate(cadrs = if_else(is.na(cadrs) & str_detect(Name, paste(soc_inc, collapse = '|')), 1 ,cadrs),
+         cadrs = if_else(str_detect(Name, paste(soc_x, collapse = '|')), 0 ,cadrs)) %>%
+  filter(!is.na(cadrs))
+
+eng_x <- c(
+  "Independent Study",
+  "Second Language",
+  "Development",
+  "Debate",
+  "Other",
+  "Public Speaking",
+  "Strategic Reading"
+)
+
+eng_clean <- cadrs_training %>%
+  filter(content_area == "English Language and Literature") %>%
+  mutate(cadrs = if_else(str_detect(Name, paste(eng_x, collapse = '|')), 0 ,cadrs)) %>%
+  filter(!is.na(cadrs))
+
+sci_x <- c(
+  "Other",
+  "Particular Topics",
+  "Technological Inquiry",
+  "Life and Physical Sciences"
+)
+
+sci_clean <- cadrs_training_sub %>%
+  filter(content_area == "Life and Physical Sciences") %>%
+  mutate(cadrs = if_else(str_detect(Name, paste(sci_x, collapse = '|')), 0 ,cadrs)) %>%
+  filter(!is.na(cadrs))
+
+# Create file with additions and clear NAns 
+cadrs_training_c <- cadrs_training %>%
+  filter(!is.na(cadrs)) %>%
+  bind_rows(math_clean,
+            lan_clean,
+            soc_clean,
+            eng_clean,
+            sci_clean)
+
+table(cadrs_training_c$cadrs)
+
+
+# Computer and Information Sciences
+# IB Computer Science
+
+
+##
+#label as non-cadrs
+non_cadr_sub <- c(
+  "Physical, Health, and Safety Education",
+  "Miscellaneous",
+  "Military Science",
+  "Manufacturing",
+  "Health Care Sciences",
+  "Hospitality and Tourism",
+  "Transportation, Distribution and Logistics",
+  "Public, Protective, and Government Service",
+  "Nonsubject Specific"
+  )
+
+cadrs_training_c <- cadrs_training_c %>%
+  mutate( cadrs = if_else(str_detect(content_area, paste(non_cadr_sub, collapse = '|')), 0 ,cadrs))
+
+table(cadrs_training_c$cadrs)
+
+write_csv(cadrs_training_c, path = "~/data/cadrs/cadrs_training.csv")
