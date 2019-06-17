@@ -389,4 +389,4 @@ cadrs_training_c <- cadrs_training_c %>%
 
 table(cadrs_training_c$cadrs)
 
-write_csv(cadrs_training_c, path = "~/data/cadrs/cadrs_training.csv")
+# write_csv(cadrs_training_c, path = "~/data/cadrs/cadrs_training.csv")
