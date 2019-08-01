@@ -143,7 +143,7 @@ for word, i in word_index.items():
         embedding_matrix[i] = embedding_vector
     except KeyError:
         embedding_matrix[i]=np.random.normal(0,np.sqrt(0.25),word_vector_dim)
-    
+
 
 len(embedding_matrix)
 embedding_matrix.shape
@@ -156,10 +156,10 @@ nonzero_elements / max_words
 word_vector_dim = int(3e2)
 nb_filters = 150
 filter_size_a = 3
-filter_size_b = 4
+filter_size_b = 5
 drop_rate = 0.3
 batch_size = 64
-nb_epoch = 6
+nb_epoch = 20
 my_optimizer = 'adam' 
 my_patience = 2
 ## Model 
@@ -268,3 +268,42 @@ ax.legend(scatterpoints=1)
 fig.suptitle('t-SNE visualization of CNN-based course embeddings \n (first 50 courses from test set)',fontsize=10)
 fig.set_size_inches(6,4)
 # fig.savefig(path_to_plot + 'doc_embeddings_init.pdf',bbox_inches='tight')
+# toy predictions 
+
+## TOY DATA
+Xnew = [['algebra'],['geometry'],['algebra', '1'],['english', 'language', 'literature'], [
+    'computer', 'science', 'courses', 'prepare', 'students',
+    'take', 'the', 'international', 'baccalaureate', 'computer',
+    'science', 'exam'], 
+    ['applied', 'english', 'communications', 'courses'],
+    ['these', 'courses', 'examine', 'specific', 'topic', 'algebra'],
+    ['consumer', 'math', 'courses', 'reinforce', 'general', 'math', 'topics',
+     'such', 'arithmetic', 'using', 'rational', 'numbers'],
+     ['mathematics', 'test', 'preparation', 'courses', 'provide', 'students', 'activities', 'analytical', 'thinking']
+    ]
+
+new_sequences2 = tokenizer.texts_to_sequences(Xnew)
+new_sequences2
+new_data = pad_sequences(new_sequences2, maxlen=maxlen)
+new_data
+predictions = model.predict(new_data)
+predictions
+##########
+
+predictions[0]
+Xnew[0]
+
+labels_index = dict(zip(["Non CADRs", "CADRs"], [0,1]))
+
+Xnew[0]
+scoredict = {labels_index: predictions[0][idx] for idx, labels_index in enumerate(labels_index)}
+scoredict
+
+Xnew[1]
+scoredict = {labels_index: predictions[1][idx] for idx, labels_index in enumerate(labels_index)}
+scoredict
+
+Xnew[2]
+scoredict = {labels_index: predictions[2][idx] for idx, labels_index in enumerate(labels_index)}
+scoredict
+
