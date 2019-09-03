@@ -41,21 +41,11 @@ path_to_plot = path_root
 path_to_save = path_root
 
 use_pretrained = True
-name_save = 'cadrs_cnn_two_branches.hdf5'
 
 
-word_vector_dim = int(3e2)
-nb_filters = 150
-filter_size_a = 3
-filter_size_b = 4
-drop_rate = 0.3
-batch_size = 64
-nb_epoch = 20
-my_optimizer = 'adam' 
-my_patience = 2
 validation_split = 0.2
 
-crs_cat =  pd.read_csv(os.path.join(path_to_cadrs,'cadrs_training.csv'), delimiter = ',')
+crs_cat =  pd.read_csv(os.path.join(path_to_cadrs,'cadrs_training_rsd.csv'), delimiter = ',')
 print('The shape: %d x %d' % crs_cat.shape)
 crs_cat.columns
 
@@ -69,13 +59,13 @@ train_crs.shape
 test_crs.shape
 
 # Create lists of texts and labels 
-text =  train_crs['Description']
-
+text =  train_crs['Name']
+text[3]
 num_words = [len(words.split()) for words in text]
-max(num_words)
+max_seq_len = max(num_words) + 1
 
 ## prep outcome labes 1=cadrs, 0=not cadrs 
-labels = train_crs['cadrs']
+labels = train_crs['cadr']
 labels = list(labels)
 labels
 
@@ -83,27 +73,30 @@ labels
 REPLACE_BY_SPACE_RE = re.compile('[/(){}\[\]\|@,;]')
 BAD_SYMBOLS_RE = re.compile('[^0-9a-z #+_]')
 STOPWORDS = set(stopwords.words('english'))
+REM_GRADE = re.compile(r'\b[0-9]\w+')
+REPLACE_NUM_RMN = re.compile(r'([0-9]+)|(^IX|IV|V?I{0,3}$)')
+# re.sub(r'\b[0-9]\w+|([0-9]+)|([IVXLCDM]+)', '', test_2)
+#test = 'English Language Arts IV 10th grade Vietnam'
+#re.sub(r'(^IX|IV|V?I{0,3}$)', '', test)
 
 def clean_text(text):
-    """
-        text: a string
-        
-        return: modified initial string
-    """
+    text = REM_GRADE.sub('', text)
+    text = REPLACE_NUM_RMN.sub('', text)
     text = text.lower() # lowercase text
-    text = REPLACE_BY_SPACE_RE.sub(' ', text) # replace REPLACE_BY_SPACE_RE symbols by space in text
-    text = BAD_SYMBOLS_RE.sub('', text) # delete symbols which are in BAD_SYMBOLS_RE from text
-    text = ' '.join(word for word in text.split() if word not in STOPWORDS) # delete stopwors from text
+    text = REPLACE_BY_SPACE_RE.sub(' ', text)
+    text = BAD_SYMBOLS_RE.sub(' ', text) 
+    text = ' '.join(word for word in text.split() if word not in STOPWORDS)
+    text = ' '.join(word for word in text.split() if len(word)>1)
     return text
 
 text = text.apply(clean_text)
-
+text[1]
 text.apply(lambda x: len(x.split(' '))).sum()
 
 text = text.astype(str).values.tolist() # list of text samples
-
+text
 ##### Tokenize
-maxlen = max(num_words) + 1  # max number of words in a description to consider
+#maxlen = max(num_words) + 1  # max number of words in a description to consider
 
 tokenizer = Tokenizer()
 tokenizer.fit_on_texts(text)
@@ -112,9 +105,9 @@ sequences = tokenizer.texts_to_sequences(text)
 word_index = tokenizer.word_index # word and their token # ordered by most frequent
 print('Found %s unique tokens.' % len(word_index))
 
-max_words = len(word_index) + 1 # total words of vocabulary we will consider
+max_words = 425 # total words of vocabulary we will consider
 
-text_tok = pad_sequences(sequences, maxlen=maxlen)
+text_tok = pad_sequences(sequences, maxlen=max_seq_len+1)
 text_tok.shape
 np.mean(text_tok > 0)
 
@@ -132,7 +125,7 @@ x_train, x_val, y_train, y_val = train_test_split(text_tok, labels, test_size=0.
 word_vectors = KeyedVectors.load_word2vec_format(path_root + 'GoogleNews-vectors-negative300.bin', binary=True)
 
 word_vector_dim=300
-vocabulary_size=min(len(word_index)+1,max_words)
+vocabulary_size= max_words+1
 embedding_matrix = np.zeros((vocabulary_size, word_vector_dim))
 
 for word, i in word_index.items():
@@ -153,31 +146,27 @@ nonzero_elements = np.count_nonzero(np.count_nonzero(embedding_matrix, axis=1))
 nonzero_elements / max_words
 
 ####
-word_vector_dim = int(3e2)
 nb_filters = 150
-filter_size_a = 3
-filter_size_b = 5
+filter_size_a = 1
+filter_size_b = 2
+filter_size_c = 3
 drop_rate = 0.3
-batch_size = 64
+batch_size = 20
 nb_epoch = 20
 my_optimizer = 'adam' 
 my_patience = 2
 ## Model 
-my_input = Input(shape=(maxlen,)) # we leave the 2nd argument of shape blank because the Embedding layer cannot accept an input_shape argument
+my_input = Input(shape=(None,)) # we leave the 2nd argument of shape blank because the Embedding layer cannot accept an input_shape argument
 
 embedding = Embedding(input_dim=embedding_matrix.shape[0], # vocab size, including the 0-th word used for padding
                         output_dim=word_vector_dim,
                         weights=[embedding_matrix], # we pass our pre-trained embeddings
-                        input_length=maxlen,
+                        input_length=max_seq_len,
                         trainable=False,
                         )(my_input)
 
 embedding_dropped = Dropout(drop_rate)(embedding)
 
-# feature map size should be equal to max_size-filter_size+1
-# tensor shape after conv layer should be (feature map size, nb_filters)
-print('branch A:',nb_filters,'feature maps of size',maxlen-filter_size_a+1)
-print('branch B:',nb_filters,'feature maps of size',maxlen-filter_size_b+1)
 
 # A branch
 conv_a = Conv1D(filters = nb_filters,
@@ -199,7 +188,18 @@ pooled_conv_b = GlobalMaxPooling1D()(conv_b)
 
 pooled_conv_dropped_b = Dropout(drop_rate)(pooled_conv_b)
 
-concat = Concatenate()([pooled_conv_dropped_a,pooled_conv_dropped_b])
+# C branch
+conv_c = Conv1D(filters = nb_filters,
+              kernel_size = filter_size_c,
+              activation = 'relu',
+              )(embedding_dropped)
+
+pooled_conv_c = GlobalMaxPooling1D()(conv_c)
+
+pooled_conv_dropped_c = Dropout(drop_rate)(pooled_conv_c)
+
+## concatenate
+concat = Concatenate()([pooled_conv_dropped_a,pooled_conv_dropped_b,pooled_conv_dropped_c])
 
 concat_dropped = Dropout(drop_rate)(concat)
 
@@ -221,6 +221,7 @@ early_stopping = EarlyStopping(monitor='val_acc', # go through epochs as long as
                                mode='max')
 
 # make sure that the model corresponding to the best epoch is saved
+name_save = "final_model_fold_title.h5"
 checkpointer = ModelCheckpoint(filepath=path_to_save + name_save,
                                monitor='val_acc',
                                save_best_only=True,
@@ -271,23 +272,24 @@ fig.set_size_inches(6,4)
 # toy predictions 
 
 ## TOY DATA
-Xnew = [['algebra'],['geometry'],['algebra', '1'],['english', 'language', 'literature'], [
+Xnew = [['japanese'],['applied','algebra'],['geometry'],['algebra'],['english', 'language', 'literature'], [
     'computer', 'science', 'courses', 'prepare', 'students',
     'take', 'the', 'international', 'baccalaureate', 'computer',
     'science', 'exam'], 
     ['applied', 'english', 'communications', 'courses'],
-    ['these', 'courses', 'examine', 'specific', 'topic', 'algebra'],
-    ['consumer', 'math', 'courses', 'reinforce', 'general', 'math', 'topics',
-     'such', 'arithmetic', 'using', 'rational', 'numbers'],
-     ['mathematics', 'test', 'preparation', 'courses', 'provide', 'students', 'activities', 'analytical', 'thinking']
+    ['spanish'],
+    ['10th, grade']
     ]
 
 new_sequences2 = tokenizer.texts_to_sequences(Xnew)
 new_sequences2
-new_data = pad_sequences(new_sequences2, maxlen=maxlen)
+new_data = pad_sequences(new_sequences2, maxlen=max_seq_len)
 new_data
 predictions = model.predict(new_data)
 predictions
+#### Look at new data
+new_data.shape
+
 ##########
 
 predictions[0]
@@ -306,4 +308,67 @@ scoredict
 Xnew[2]
 scoredict = {labels_index: predictions[2][idx] for idx, labels_index in enumerate(labels_index)}
 scoredict
+# Look at test data 
 
+from numpy import argmax
+
+test_crs.head
+
+
+test_crs['Description']=test_crs['Description'].fillna("")
+
+text_out =  test_crs['Description']
+num_words_2 = [len(words.split()) for words in text_out]
+max(num_words_2)
+
+REPLACE_BY_SPACE_RE = re.compile('[/(){}\[\]\|@,;]')
+BAD_SYMBOLS_RE = re.compile('[^0-9a-z #+_]')
+STOPWORDS = set(stopwords.words('english'))
+
+def clean_text(text):
+    """
+        text: a string
+        
+        return: modified initial string
+    """
+    text = text.lower() # lowercase text
+    text = REPLACE_BY_SPACE_RE.sub(' ', text) # replace REPLACE_BY_SPACE_RE symbols by space in text
+    text = BAD_SYMBOLS_RE.sub('', text) # delete symbols which are in BAD_SYMBOLS_RE from text
+    text = ' '.join(word for word in text.split() if word not in STOPWORDS) # delete stopwors from text
+    return text
+
+text = text_out.apply(clean_text)
+
+text.apply(lambda x: len(x.split(' '))).sum()
+
+text = text.astype(str).values.tolist() # list of text samples
+
+tokenizer = Tokenizer()
+tokenizer.fit_on_texts(text)
+sequences = tokenizer.texts_to_sequences(text)
+
+
+text_tok = pad_sequences(sequences, maxlen=max_seq_len+1)
+text_tok.shape
+
+
+predictions_new = model.predict(text_tok)
+
+pred_cols = pd.DataFrame(predictions_new, columns = ['p_notCADRS', 'p_CADRS'])
+pred_cols.head
+pred_cols.shape
+
+class_y = np.argmax(predictions_new,axis=1)
+len(class_y)
+
+pred_cols['pred_class'] = class_y
+pred_cols.head()
+pred_cols.shape
+test_crs.shape
+test_crs = test_crs.reset_index(drop=True)
+pred_cols = pred_cols.reset_index(drop=True)
+
+combined_pred = test_crs.merge(pred_cols, left_index=True, right_index=True)
+
+combined_pred.shape
+combined_pred.to_csv('/home/joseh/data/cnn_cadr_student_testset.csv', encoding='utf-8', index=False)

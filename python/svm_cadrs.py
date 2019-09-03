@@ -36,7 +36,7 @@ path_to_plot = path_root
 path_to_save = path_root
 
 
-crs_cat =  pd.read_csv(os.path.join(path_to_cadrs,'cadrs_training.csv'), delimiter = ',')
+crs_cat =  pd.read_csv(os.path.join(path_to_cadrs,'cadrs_training_rsd.csv'), delimiter = ',')
 print('The shape: %d x %d' % crs_cat.shape)
 crs_cat.columns
 
@@ -48,10 +48,10 @@ crs_cat.head
 text =  crs_cat['Name']
 len(text)
 
-labels = crs_cat['cadrs']
+labels = crs_cat['cadr']
 
 num_words = [len(words.split()) for words in text]
-min(num_words)
+max(num_words)
 
 # Clean up text
 REPLACE_BY_SPACE_RE = re.compile('[/(){}\[\]\|@,;]')
@@ -64,8 +64,8 @@ REPLACE_NUM_RMN = re.compile(r'([0-9]+)|(^IX|IV|V?I{0,3}$)')
 #re.sub(r'(^IX|IV|V?I{0,3}$)', '', test)
 
 def clean_text(text):
-    text = REM_GRADE.sub('', text)
-    text = REPLACE_NUM_RMN.sub('', text)
+    # text = REM_GRADE.sub('', text)
+    # text = REPLACE_NUM_RMN.sub('', text)
     text = text.lower() # lowercase text
     text = REPLACE_BY_SPACE_RE.sub(' ', text)
     text = BAD_SYMBOLS_RE.sub(' ', text) 
@@ -76,7 +76,7 @@ def clean_text(text):
 text = text.apply(clean_text)
 
 text.apply(lambda x: len(x.split(' '))).sum()
-text
+text[1:50]
 #####
 x_train, x_test, y_train, y_test = train_test_split(text, labels, test_size=0.2, random_state = 42)
 
@@ -104,13 +104,46 @@ parameters = {
 }
 
 gs_clf = GridSearchCV(sgd, parameters, cv=5, iid=False, n_jobs=-1)
-gs_clf.fit(x_train, y_train)
+gs_clf.fit(text, labels)
 
 gs_clf.best_score_
 for param_name in sorted(parameters.keys()):
     print("%s: %r" % (param_name, gs_clf.best_params_[param_name]))
 
 gs_clf.cv_results_
+# check the test set for results 
+
+test_pred = gs_clf.predict(x_test)
+
+pred_cols = pd.DataFrame(test_pred, columns = ['p_CADRS'])
+
+
+pred_cols.head
+
+combined_pred = pred_cols.merge(x_test, left_index=True, right_index=True)
+combined_pred = combined_pred.merge(y_test, left_index=True, right_index=True)
+combined_pred.head
+
+
+
+
+# Need to use saved model but using right after a fresh run for now
+file_nm = '/home/ubuntu/data/db_files/preprocess/course_2017_cohort_clean.csv'
+crs_student =  pd.read_csv(file_nm, delimiter = ',', dtype={'Description': str})
+crs_student.shape
+crs_student.columns
+
+crs_student['state_spec_course']=crs_student['state_spec_course'].fillna("")
+
+text_out =  crs_student['state_spec_course']
+num_words_2 = [len(words.split()) for words in text_out]
+max(num_words_2)
+
+text = text_out.apply(clean_text)
+
+text.apply(lambda x: len(x.split(' '))).sum()
+
+text = text.astype(str).values.tolist()
 
 len(text)
 
@@ -123,4 +156,6 @@ pred_cols.head
 
 combined_pred = crs_student.merge(pred_cols, left_index=True, right_index=True)
 combined_pred.head
-combined_pred.to_csv('/home/joseh/data/cnn_cadr_student_predictions_CVSearch2.csv', encoding='utf-8', index=False)
+combined_pred.to_csv('/home/joseh/data/svm_cadr_student_predictions_CV.csv', encoding='utf-8', index=False)
+
+
