@@ -6,8 +6,9 @@ library(tidyverse)
 library(openxlsx)
 library(data.table)
 
-gr_hist <- "~/data/cadrs/hsCourses.txt"
+gr_hist <- "~/data/cadr_update/hsCourses.txt"
 df_h <- read_delim(gr_hist, delim = "|", quote = "",col_names = TRUE, na = c("", "NA", "NULL")) 
+
 
 ######
 # STATE COURSE CATALOGUE FILES YEARLY
@@ -227,12 +228,13 @@ cadrs_training <- left_join(ospi_df, cadrs_unique, by = c("State.Course.Code" = 
   data.frame()
 
 sum(is.na(cadrs_training$cadrs))/ length(cadrs_training$cadrs)
+
 # 73% missing label
 # some courses not offered in these districts
 cadrs_training <- cadrs_training %>%
-  select(-year) %>%
+  select(-year, -StateCourseName, -Type..AP.IB.) %>%
   unique() %>%
-  rename(ap_ib=Type..AP.IB., subject = Subject.Area.Code)
+  rename(subject = Subject.Area.Code)
 
 # write_csv(cadrs_training, path = "~/data/cadrs/cadrs_training.csv")
 
@@ -253,15 +255,8 @@ cadrs_training_all <- cadrs_training_all %>%
   unique()
 # save with NAs 
 #write_csv(cadrs_training_all, path = "~/data/cadrs/cadrs_training_all.csv")
-#Try to clean-up NAs - manual clean up 
-names(cadrs_training)
-
-cadrs_training_sub <- cadrs_training %>% 
-  filter(is.na(cadrs))
-
-cadrs_training_sub %>%
-  select(content_area) %>%
-  table()
+#Try to clean-up- manual clean up
+# use the sub districts without seattle, seattle is not good :( 
 
 ########
 # using math key-words
@@ -278,14 +273,17 @@ math_x <- c(
   "Other",
   "General",
   "Business Math",
-  "Particular Topics"
+  "Particular Topics",
+  "Independent Study",
+  "Proficiency Development"
 )
 
 math_clean <- cadrs_training %>%
   filter(content_area == "Mathematics") %>%
   mutate(cadrs = if_else(is.na(cadrs) & str_detect(Name, paste(math_inc, collapse = '|')), 1 ,cadrs),
          cadrs = if_else(str_detect(Name, paste(math_x, collapse = '|')), 0 ,cadrs)) %>%
-  filter(!is.na(cadrs))
+  filter(!is.na(cadrs)) %>%
+  unique()
 
 # foreign language 
 # all but these key_words
@@ -308,7 +306,8 @@ lan_clean <- cadrs_training %>%
   filter(content_area == "Foreign Language and Literature") %>%
   mutate(cadrs = if_else(is.na(cadrs) & str_detect(Name, paste(lang_x, collapse = '|')), 0 ,1),
          cadrs = if_else(str_detect(Name, paste(lang_inc, collapse = '|')), 1 ,cadrs)) %>%
-  filter(!is.na(cadrs))
+  filter(!is.na(cadrs)) %>%
+  unique()
 
 # sociology
 
@@ -325,7 +324,8 @@ soc_clean <- cadrs_training %>%
   filter(content_area == "Social Sciences and History") %>%
   mutate(cadrs = if_else(is.na(cadrs) & str_detect(Name, paste(soc_inc, collapse = '|')), 1 ,cadrs),
          cadrs = if_else(str_detect(Name, paste(soc_x, collapse = '|')), 0 ,cadrs)) %>%
-  filter(!is.na(cadrs))
+  filter(!is.na(cadrs)) %>%
+  unique()
 
 eng_x <- c(
   "Independent Study",
@@ -340,7 +340,8 @@ eng_x <- c(
 eng_clean <- cadrs_training %>%
   filter(content_area == "English Language and Literature") %>%
   mutate(cadrs = if_else(str_detect(Name, paste(eng_x, collapse = '|')), 0 ,cadrs)) %>%
-  filter(!is.na(cadrs))
+  filter(!is.na(cadrs)) %>%
+  unique()
 
 sci_x <- c(
   "Other",
@@ -349,10 +350,11 @@ sci_x <- c(
   "Life and Physical Sciences"
 )
 
-sci_clean <- cadrs_training_sub %>%
+sci_clean <- cadrs_training %>%
   filter(content_area == "Life and Physical Sciences") %>%
   mutate(cadrs = if_else(str_detect(Name, paste(sci_x, collapse = '|')), 0 ,cadrs)) %>%
-  filter(!is.na(cadrs))
+  filter(!is.na(cadrs)) %>%
+  unique()
 
 # Create file with additions and clear NAns 
 cadrs_training_c <- cadrs_training %>%
@@ -361,13 +363,19 @@ cadrs_training_c <- cadrs_training %>%
             lan_clean,
             soc_clean,
             eng_clean,
-            sci_clean)
+            sci_clean) %>%
+  unique()
 
 table(cadrs_training_c$cadrs)
 
 
 # Computer and Information Sciences
 # IB Computer Science
+cadrs_training_c %>%
+  filter(Name == "IB Computer Science")
+
+cadrs_training_c <- cadrs_training_c %>%
+  mutate(cadrs = if_else(Name == "IB Computer Science", 1, cadrs))
 
 
 ##
@@ -389,4 +397,4 @@ cadrs_training_c <- cadrs_training_c %>%
 
 table(cadrs_training_c$cadrs)
 
-# write_csv(cadrs_training_c, path = "~/data/cadrs/cadrs_training.csv")
+write_csv(cadrs_training_c, path = "~/data/cadrs/cadrs_training.csv")
