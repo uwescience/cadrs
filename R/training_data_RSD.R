@@ -399,13 +399,14 @@ rownames(art_cr) <- 1:nrow(art_cr)
 # courses not captured
 
 soc_cad <- c(
-  'CIVICS',
   'Contemporary Global Issues',
   'Contemporary World Problems',
   'Contemporary World Issues',
   'political science',
   'psychology',
-  'geography'
+  'geography',
+  'U.S. History',
+  'US Hist'
 )
 
 datalist = list()
@@ -433,7 +434,8 @@ ospi_rsd_train <- bind_rows(
 # Check cadr flag for subset 
 cr_name_sub <- c(
   'Literature of a Genre',
-  'Literature of a Theme'
+  'Literature of a Theme',
+  'Civics'
 )
 
 ospi_rsd_train <- ospi_rsd_train %>%

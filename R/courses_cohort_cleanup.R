@@ -9,8 +9,8 @@ stu_enroll_fn <-"~/data/cadr_update/enrollments.txt"
 sch_dim_fn <- "~/data/cadr_update/Dim_School.txt"
 stu_dim_fn <- "~/data/cadr_update/Dim_Student.txt"
 gr_hist_fn <- "~/data/cadr_update/hsCourses.txt"
-gr_hist_2017_fn <- "/home/ubuntu/data/db_files/course_2017_cohort.csv"
-gr_enroll_cohort_fn <- "/home/ubuntu/data/db_files/enroll_2017_cohort.csv"
+gr_hist_2017_fn <- "/home/ubuntu/data/db_files/course_2017_cohort.csv" #from SQL
+gr_enroll_cohort_fn <- "/home/ubuntu/data/db_files/enroll_2017_cohort.csv" #from SQL
 
 stu_enroll <- fread(stu_enroll_fn, na.strings = c("NA", "NULL"))
 sch_dim <- fread(sch_dim_fn, quote="", na.strings = c("NA", "NULL"))
