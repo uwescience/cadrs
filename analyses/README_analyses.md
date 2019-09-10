@@ -32,6 +32,6 @@ There are two tables created using SQL-script `SQL/CADR_result_tables.sql`
 
 ## Running Support Vector Machines (SVM) to code CADR courses for 2017 grad cohort
 
-Run: `analyses/svm/avm_cadrs.py`
+Run: `analyses/svm/svm_cadrs.py`
 
 Description: (more to come)
