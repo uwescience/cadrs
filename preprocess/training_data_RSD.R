@@ -10,8 +10,6 @@ ospi_crs15_fn <- "~/data/cadrs/2014_15_StateCourseCodes.csv"
 gr_hist_fn <- "~/data/cadrs/hsCourses.txt"
 # RSD file 
 rsd_crs_fn <- "~/data/rsd_unique_3.csv"
-# Old training data
-old_train_fn <- "~/data/cadrs/cadrs_training.csv"
 # cleaned_up training
 clean_train_fn <- "~/data/ospi_stud_clean.csv"
 
@@ -47,10 +45,6 @@ rsd_crs[68,10]<- 0
 rsd_crs[67,10]<- 0
 rsd_crs[36,10]<- 0
 rsd_crs[139,10]<- 0
-
-old_train <- fread(old_train_fn, na.strings = c("NA", "NULL")) %>%
-  mutate(State.Course.Code = as.character(State.Course.Code),
-         State.Course.Code = str_pad(State.Course.Code, 5, pad = "0"))
 
 clean_train <- fread(clean_train_fn, na.strings = c("NA", "NULL")) %>%
   mutate(State.Course.Code = as.character(State.Course.Code),
@@ -150,9 +144,6 @@ ospi_rsd_train <- bind_rows(
 
 
 ### Find cases that are missing from the rsd + ospi file 
-glimpse(ospi_rsd_train)
-glimpse(clean_train)
-
 courses_not_covered <- clean_train %>%
   mutate(dist_code = NA,
          dist_description= NA) %>%

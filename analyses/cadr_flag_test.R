@@ -131,4 +131,14 @@ agg_results_tuk <- agg_results_dist %>%
   filter(DistrictName == "Tukwila School District")
 
 table(agg_results_tuk$cadr)
+
+agg_results_tuk %>%
+  filter(sum(Mathematics, na.rm=T) >= 3) %>%
+  nrow()
+
+agg_results_tuk %>%
+  filter(sum(eng_cadr, na.rm=T) >= 4) %>%
+  nrow()
+
+
 ###
