@@ -6,8 +6,6 @@ library(data.table)
 ospi_crs17_fn <- "~/data/cadrs/2016-17StateCourseCodes.xlsx"
 ospi_crs16_fn <- "~/data/cadrs/2015-16-StateCourseCodes.xlsx"
 ospi_crs15_fn <- "~/data/cadrs/2014_15_StateCourseCodes.csv"
-# transcript data
-gr_hist_fn <- "~/data/cadrs/hsCourses.txt"
 # RSD file 
 rsd_crs_fn <- "~/data/rsd_unique_3.csv"
 # cleaned_up training
@@ -31,8 +29,6 @@ ospi_crs15 <- left_join(ospi_crs15, ospi_crs16 %>%
 
 missing <- ospi_crs15 %>%
   filter(is.na(content_area))
-  
-# gr_hist <- fread(gr_hist_fn, quote="", na.strings = c("NA", "NULL"))
 
 rsd_crs <- fread(rsd_crs_fn, na.strings = c("NA", "NULL")) %>%
   mutate(State.Course.Code = as.character(`State Code`),
