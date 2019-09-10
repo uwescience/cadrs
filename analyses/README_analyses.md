@@ -30,7 +30,7 @@ There are two tables created using SQL-script `SQL/CADR_result_tables.sql`
 2. `enroll_2017_cohort.csv` L#29 - L#37
 
 
-## Running SUpport Vector Machines (SVM) to code CADR courses for 2017 grad cohort
+## Running Support Vector Machines (SVM) to code CADR courses for 2017 grad cohort
 
 Run: `analyses/svm/avm_cadrs.py`
 
