@@ -430,19 +430,3 @@ ospi_rsd_train <- ospi_rsd_train %>%
 
 
 write_csv(ospi_rsd_train, "~/data/cadrs/cadrs_training_rsd.csv")
-
-##### ADDING COURSE NAME VARIANTS USING GHF -- MIGHT INTRODUCE ERRORS IN CADRS CODING..
-# select course names thta appear in ospi rsd train from the sgh Focus on the main areas 
-gr_hist <- fread(gr_hist_fn, quote="", na.strings = c("NA", "NULL"))
-glimpse(gr_hist)
-
-courses_cov_ghf <- gr_hist %>%
-  mutate(dist_code = NA,
-         dist_description= NA,
-         Description = NA) %>%
-  select(dist_code, State.Course.Code=StateCourseCode, Name=CourseTitle, cadr=CollegeAcademicDistributionRequirementsFlag, dist_description, Description, content_area=ContentAreaName) %>%
-  filter(State.Course.Code %in% ospi_rsd_train[, "State.Course.Code"]) %>%
-  unique()
-
-# write_csv(courses_cov_ghf, "~/data/cadrs_sgh_variants.csv")
-
