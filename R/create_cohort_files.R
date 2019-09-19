@@ -69,10 +69,10 @@ import_table_using_dbi <- function(file_path, table_name, sep=",", quote="\"", f
 	gc() # force garbage collection
 }
 
-# import_table_using_dbi(dim_course_path, "DimCourse")
-# import_table_using_dbi(dim_school_path, "dimSchool", sep="|", quote="", file_encoding="UTF-8-BOM")
-# import_table_using_dbi(enrollment_path, "enrollment", sep="|", quote="", file_encoding="UTF-8-BOM")
-# import_table_using_dbi(gr_hist, "courses", sep="|", quote="", file_encoding="UTF-8-BOM")
+import_table_using_dbi(dim_course_path, "DimCourse")
+import_table_using_dbi(dim_school_path, "dimSchool", sep="|", quote="", file_encoding="UTF-8-BOM")
+import_table_using_dbi(enrollment_path, "enrollment", sep="|", quote="", file_encoding="UTF-8-BOM")
+import_table_using_dbi(gr_hist, "courses", sep="|", quote="", file_encoding="UTF-8-BOM")
 
 ######
 
