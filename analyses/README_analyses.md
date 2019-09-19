@@ -30,8 +30,16 @@ There are two tables created using SQL-script `SQL/CADR_result_tables.sql`
 2. `enroll_2017_cohort.csv` L#29 - L#37
 
 
-## Running Support Vector Machines (SVM) to code CADR courses for 2017 grad cohort
+# Methods
+
+## Support Vector Machines (SVM)
 
 Run: `analyses/svm/svm_cadrs.py`
 
 Description: (more to come)
+
+## XGBoost
+
+## Convolutional Neural Network (Trainable Embeddings)
+
+## Convolutional Neural Network (Google Pre-Trained Embeddings)
