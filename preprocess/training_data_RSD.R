@@ -1,15 +1,9 @@
 library(tidyverse)
 library(openxlsx)
 library(data.table)
+library(here)
 
-# STATE COURSE CATALOGUE FILES YEARLY and RSD
-ospi_crs17_fn <- "~/data/cadrs/2016-17StateCourseCodes.xlsx"
-ospi_crs16_fn <- "~/data/cadrs/2015-16-StateCourseCodes.xlsx"
-ospi_crs15_fn <- "~/data/cadrs/2014_15_StateCourseCodes.csv"
-# RSD file 
-rsd_crs_fn <- "~/data/rsd_unique_3.csv"
-# cleaned_up training
-clean_train_fn <- "~/data/ospi_stud_clean.csv"
+source(here("settings.R"))
 
 ospi_crs17 <- read.xlsx(ospi_crs17_fn, 4, startRow = 2) %>%
   select(State.Course.Code:X6) %>%
@@ -96,7 +90,9 @@ ospi_crs <- bind_rows(
 ) %>%
   unique() %>%
   select(-Subject.Area.Code, -`Type.(AP/IB)`)
-# write_csv(ospi_crs, "/home/ubuntu/data/db_files/preprocess/state_courses.csv")
+
+write_csv(ospi_crs, dim_course_path)
+
 # CLEAN UP RSD FILE 
 # Begin with descriptions add course name in description
 names(rsd_crs)
@@ -429,4 +425,4 @@ ospi_rsd_train <- ospi_rsd_train %>%
   mutate(cadr = if_else(Name %in% cr_name_sub, 1, cadr))
 
 
-write_csv(ospi_rsd_train, "~/data/cadrs/cadrs_training_rsd.csv")
+write_csv(ospi_rsd_train, rsd_cadrs_training_path)

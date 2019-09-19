@@ -4,13 +4,16 @@
 library(tidyverse)
 library(openxlsx)
 library(data.table)
+library(here)
 
-stu_enroll_fn <-"~/data/cadr_update/enrollments.txt"
-sch_dim_fn <- "~/data/cadr_update/Dim_School.txt"
-stu_dim_fn <- "~/data/cadr_update/Dim_Student.txt"
-gr_hist_fn <- "~/data/cadr_update/hsCourses.txt"
-gr_hist_2017_fn <- "/home/ubuntu/data/db_files/course_2017_cohort.csv" #from SQL
-gr_enroll_cohort_fn <- "/home/ubuntu/data/db_files/enroll_2017_cohort.csv" #from SQL
+source(here("settings.R"))
+
+stu_enroll_fn <- enrollment_path
+sch_dim_fn <- dim_school_path
+stu_dim_fn <- dim_student_path
+gr_hist_fn <- gr_hist
+gr_hist_2017_fn <- course_2017_cohort_path #from SQL
+gr_enroll_cohort_fn <- enroll_2017_cohort_path #from SQL
 
 stu_enroll <- fread(stu_enroll_fn, na.strings = c("NA", "NULL"))
 sch_dim <- fread(sch_dim_fn, quote="", na.strings = c("NA", "NULL"))
@@ -178,5 +181,5 @@ table(missing_carea[,"dSchoolYear"])
 results_unique_c <- missing_carea %>% select(state_spec_course) %>% unique()
 # Conditionals for 12th grade electives that count towards cadrs (journalism etc...)
 
-write_csv(gr_hist_2017, "/home/ubuntu/data/db_files/preprocess/course_2017_cohort_clean.csv")
+write_csv(gr_hist_2017, course_2017_cohort_clean_path)
 ##
