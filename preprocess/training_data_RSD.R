@@ -13,7 +13,7 @@ ospi_crs16 <- read.xlsx(ospi_crs16_fn, 4, startRow = 2) %>%
   select(State.Course.Code:X6) %>%
   rename(content_area = X6)
 
-ospi_crs15 <- fread(ospi_crs15_fn, skip = 2, header = T, drop = c("V1","V5")) %>%
+ospi_crs15 <- fread(ospi_crs15_fn, skip = 2, header = T, drop = c("V1","V5"), encoding='UTF-8') %>%
   rename(State.Course.Code = `State Course Code`) %>%
   mutate(State.Course.Code = as.character(State.Course.Code),
          State.Course.Code = str_pad(State.Course.Code, 5, pad = "0"))
@@ -24,7 +24,7 @@ ospi_crs15 <- left_join(ospi_crs15, ospi_crs16 %>%
 missing <- ospi_crs15 %>%
   filter(is.na(content_area))
 
-rsd_crs <- fread(rsd_crs_fn, na.strings = c("NA", "NULL")) %>%
+rsd_crs <- fread(rsd_crs_fn, na.strings = c("NA", "NULL"), encoding='UTF-8') %>%
   mutate(State.Course.Code = as.character(`State Code`),
          State.Course.Code = str_pad(State.Course.Code, 5, pad = "0"),
          cadr = if_else(`CADR Flag` == 'Yes', 1,0),
@@ -36,7 +36,7 @@ rsd_crs[67,10]<- 0
 rsd_crs[36,10]<- 0
 rsd_crs[139,10]<- 0
 
-clean_train <- fread(clean_train_fn, na.strings = c("NA", "NULL")) %>%
+clean_train <- fread(clean_train_fn, na.strings = c("NA", "NULL"), encoding='UTF-8') %>%
   mutate(State.Course.Code = as.character(State.Course.Code),
          State.Course.Code = str_pad(State.Course.Code, 5, pad = "0"))
 
