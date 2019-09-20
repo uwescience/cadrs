@@ -17,9 +17,11 @@ from sklearn.model_selection import train_test_split, cross_val_score, GridSearc
 from gensim.models.word2vec import Word2Vec
 
 import os
+import os.path
 import re
 import random
 import operator
+import sys
 import nltk 
 #nltk.download('stopwords')
 from nltk import pos_tag
@@ -29,7 +31,17 @@ from bs4 import BeautifulSoup
 
 from xgboost import XGBClassifier
 
-path_root = '/home/joseh/data/'
+# fix for bug in venv on windows, probably starting from python 3.7.2: https://bugs.python.org/issue35797
+# this manifests as "PermissionError: [WinError 5] Access is denied" errors.
+# this is a workaround
+in_virtual_env = sys.prefix != sys.base_prefix
+if sys.platform == 'win32' and in_virtual_env and sys.version_info.major == 3 and sys.version_info.minor == 7:
+    import _winapi
+    sys.executable = _winapi.GetModuleFileName(0)
+
+this_file_path = os.path.abspath(__file__)
+project_root = os.path.split(os.path.split(os.path.split(this_file_path)[0])[0])[0]
+path_root = os.path.join(project_root, "data") + '/'
 path_to_cadrs = path_root + 'cadrs/'
 path_to_pretrained_wv = path_root
 path_to_plot = path_root
@@ -128,7 +140,8 @@ combined_pred.head
 
 
 # Need to use saved model but using right after a fresh run for now
-file_nm = '/home/ubuntu/data/db_files/preprocess/course_2017_cohort_clean.csv'
+#file_nm = '/home/ubuntu/data/db_files/preprocess/course_2017_cohort_clean.csv'
+file_nm = os.path.join(project_root, 'output/course_2017_cohort_clean.csv')
 crs_student =  pd.read_csv(file_nm, delimiter = ',', dtype={'Description': str})
 crs_student.shape
 crs_student.columns
@@ -156,6 +169,6 @@ pred_cols.head
 
 combined_pred = crs_student.merge(pred_cols, left_index=True, right_index=True)
 combined_pred.head
-combined_pred.to_csv('/home/joseh/data/svm_cadr_student_predictions_CV.csv', encoding='utf-8', index=False)
+combined_pred.to_csv(os.path.join(path_root, 'svm_cadr_student_predictions_CV.csv'), encoding='utf-8', index=False)
 
 

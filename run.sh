@@ -32,8 +32,26 @@ $R_EXEC R/create_cohort_files.R
 # clean the cohort files
 $R_EXEC R/courses_cohort_cleanup.R
 
-# TODO:
 # run the svm model
+if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]]; then
+
+cat > tmp.ps1 <<- EOM
+python -m venv .\python_env
+.\python_env\Scripts\Activate.ps1
+pip install -r requirements.txt
+python .\analyses\svm\svm_cadrs.py
+EOM
+	powershell ./tmp.ps1
+	rm tmp.ps1
+
+else
+	python -m venv ./python_env
+	./python_env/bin/activate
+	pip install -r requirements
+	python ./analyses/svm/svm_cadrs.py
+fi
+
+$R_EXEC analyses/cadr_flag_test.R
 
 # TODO:
-# run CADR_result_tables.sql
+# run CADR_result_tables.sql?

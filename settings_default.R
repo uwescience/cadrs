@@ -42,3 +42,5 @@ course_2017_cohort_path <- "/home/ubuntu/data/db_files/course_2017_cohort.csv" #
 enroll_2017_cohort_path <- "/home/ubuntu/data/db_files/enroll_2017_cohort.csv" #from SQL
 
 course_2017_cohort_clean_path <- "/home/ubuntu/data/db_files/preprocess/course_2017_cohort_clean.csv"
+
+svm_predictions_path <- "/home/joseh/data/svm_cadr_student_predictions_CV.csv"

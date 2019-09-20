@@ -36,7 +36,7 @@ To run the Renton analysis:
 
 Copy `settings_default.R` to `settings.R` and edit paths to point to the files on your system.
 
-Then run this script:
+Open a bash window (on Windows, use git-bash) and run this script to create training data for the models:
 ```
 ./run.sh
 ```
