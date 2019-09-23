@@ -59,7 +59,7 @@ EOM
 else
 	python -m venv ./python_env
 	./python_env/bin/activate
-	pip install -r requirements
+	pip install -r requirements.txt
 	python ./analyses/svm/svm_cadrs.py
 fi
 
