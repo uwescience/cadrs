@@ -3,7 +3,7 @@ library(openxlsx)
 library(data.table)
 library(here)
 
-source(here("settings.R"))
+source(here("settings.R")) # When not running using bash R I have to use "source/cadrs/"
 
 ospi_crs17 <- read.xlsx(ospi_crs17_fn, 4, startRow = 2) %>%
   select(State.Course.Code:X6) %>%
@@ -30,11 +30,18 @@ rsd_crs <- fread(rsd_crs_fn, na.strings = c("NA", "NULL")) %>%
          cadr = if_else(`CADR Flag` == 'Yes', 1,0),
          State.Course.Code = str_remove(State.Course.Code, "[A-Z]$"))
 
-rsd_crs[61,10]<- 1
-rsd_crs[68,10]<- 0
-rsd_crs[67,10]<- 0
-rsd_crs[36,10]<- 0
-rsd_crs[139,10]<- 0
+# Some course CADR classes not correct, fix here using exact string match
+not_cadrs <- c(
+  'FIN ALGEBRA-A',
+  'COMPUTER PRO-I',
+  'CREATIVE WRIT',
+  'IB BUS&MAN HL-A'
+)
+
+rsd_crs <- rsd_crs %>%
+  mutate(cadr = if_else(`Course Short` == 'TRIGONOMETRY', 1, cadr),
+         cadr = if_else(`Course Short` %in% not_cadrs, 0, cadr))
+
 
 clean_train <- fread(clean_train_fn, na.strings = c("NA", "NULL")) %>%
   mutate(State.Course.Code = as.character(State.Course.Code),
@@ -175,7 +182,8 @@ table(courses_not_covered[,content_area])
 
 clean_soc <- courses_not_covered[content_area == 'Social Sciences and History']
 
-clean_soc[10,4] <- 1
+# correct cadr flag error
+clean_soc[, cadr := ifelse(Name == 'IB Islamic History', 1, cadr)]
 
 ospi_rsd_train <- bind_rows(
   ospi_rsd_train,
@@ -198,9 +206,14 @@ table(courses_not_covered[,content_area])
 clean_fpa <- courses_not_covered[content_area == 'Fine and Performing Arts']
 
 # re-label some cadr rows 
-clean_fpa[7,4] <- 1
-clean_fpa[27,4] <- 1
-clean_fpa[28,4] <- 1
+cadr_yes <- c(
+  'General Band',
+  'AP Studio Art—Two-Dimensional',
+  'Dance Repertory'
+)
+
+clean_fpa[, cadr := ifelse(Name %in% cadr_yes, 1, cadr)]
+
 
 # Communications and Audio/Visual Technology
 clean_comm <- courses_not_covered[content_area == 'Communications and Audio/Visual Technology']
@@ -213,8 +226,14 @@ ospi_rsd_train <- bind_rows(
 )
 
 #journalism
-ospi_rsd_train[2,4] <- 1
-ospi_rsd_train[207,4] <- 1
+cadr_yes <- c(
+  'JOURNALISM-A',
+  'Journalism'
+)
+
+ospi_rsd_train <- data.table(ospi_rsd_train)
+
+ospi_rsd_train[, cadr := ifelse(Name %in% cadr_yes, 1, cadr)]
 
 # Life and Physical Sciences 
 
@@ -241,7 +260,7 @@ courses_not_covered <- clean_train %>%
   mutate(dist_code = NA,
          dist_description= NA) %>%
   select(dist_code, State.Course.Code, Name, cadr=cadrs, dist_description, Description, content_area) %>%
-  filter(!State.Course.Code %in% ospi_rsd_train[, "State.Course.Code"])
+  filter(!State.Course.Code %in% ospi_rsd_train[, State.Course.Code])
 
 courses_not_covered <- data.table(courses_not_covered)
 
