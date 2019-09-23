@@ -30,6 +30,8 @@ else
 	: # TODO
 fi
 
+$R_EXEC -e "packrat::restore()"
+
 # create basic training data
 $R_EXEC R/cadr_training_data.R
 
