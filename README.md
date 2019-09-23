@@ -36,7 +36,9 @@ To run the Renton analysis:
 
 Copy `settings_default.R` to `settings.R` and edit paths to point to the files on your system.
 
-Open a bash window (on Windows, use git-bash) and run this script to create training data for the models:
+Open a bash window (on Windows, use git-bash) and run the following script
+to create training data for the models. If R and sqlite aren't in your PATH,
+you may need to edit the script:
 ```
 ./run.sh
 ```
