@@ -228,7 +228,8 @@ cadr_yes <- c(
 
 clean_fpa[, cadr := ifelse(Name %in% cadr_yes, 1, cadr)]
 
-# 'AP Studio Art—Two-Dimensional'
+# find 'AP Studio Art—Two-Dimensional' using state course code to work around
+# strings not matching in R b/c of encoding issues
 clean_fpa[, cadr := ifelse(`State.Course.Code` %in% c('05174'), 1, cadr)]
 
 # Communications and Audio/Visual Technology
