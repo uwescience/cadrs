@@ -223,12 +223,13 @@ clean_fpa <- courses_not_covered[content_area == 'Fine and Performing Arts']
 # re-label some cadr rows 
 cadr_yes <- c(
   'General Band',
-  'AP Studio Art—Two-Dimensional',
   'Dance Repertory'
 )
 
 clean_fpa[, cadr := ifelse(Name %in% cadr_yes, 1, cadr)]
 
+# 'AP Studio Art—Two-Dimensional'
+clean_fpa[, cadr := ifelse(`State.Course.Code` %in% c('05174'), 1, cadr)]
 
 # Communications and Audio/Visual Technology
 clean_comm <- courses_not_covered[content_area == 'Communications and Audio/Visual Technology']
