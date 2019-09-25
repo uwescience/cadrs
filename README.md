@@ -7,38 +7,17 @@ including a way to detect the College Academic Distribution Requirements
 ## Requirements
 
 - R 3.4.4
-- R Studio
-- Python ?
+- Python 3.7.4
 
-## Installation
-
-Start R Studio and open the `cadrs.Rproj` project. R will auto-install
-packrat. Run the following command interactively to auto-install all
-package dependencies. It will probably prompt you to install Rtools;
-answer yes. Get a cup of coffee--this can take a while. You only need
-to do this once.
-
-```
-# if you get an error, try running this again
-packrat::restore()
-```
-
-## Running the Code
-
-Open `preprocess.R` in R Studio. Run the code there interactively.
-The comments explain what each part does.
-
-TODO: more...
-
-## Analyses
+## Renton Analysis Pipeline
 
 To run the Renton analysis:
 
-Copy `settings_default.R` to `settings.R` and edit paths to point to the files on your system.
+Copy `settings_default.R` to `settings.R` and edit the paths to point to the files on your system.
 
 Open a bash window (on Windows, use git-bash) and run the following script
 to create training data for the models. If R and sqlite aren't in your PATH,
-you may need to edit the script:
+you may need to edit the `env.sh` script:
 ```
 ./run.sh
 ```

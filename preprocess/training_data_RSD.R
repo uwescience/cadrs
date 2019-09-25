@@ -1,6 +1,7 @@
 library(tidyverse)
 library(openxlsx)
 library(data.table)
+library(stringi)
 library(here)
 
 source(here("settings.R")) # When not running using bash R I have to use "source/cadrs/"
@@ -9,14 +10,28 @@ ospi_crs17 <- read.xlsx(ospi_crs17_fn, 4, startRow = 2) %>%
   select(State.Course.Code:X6) %>%
   rename(content_area = X6)
 
+ospi_crs17$`State.Course.Code` <- stri_encode(ospi_crs17$`State.Course.Code`, "", "UTF-8")
+ospi_crs17$Name <- stri_encode(ospi_crs17$Name, "", "UTF-8")
+ospi_crs17$Description <- stri_encode(ospi_crs17$Description, "", "UTF-8")
+ospi_crs17$content_area <- stri_encode(ospi_crs17$content_area, "", "UTF-8")
+
 ospi_crs16 <- read.xlsx(ospi_crs16_fn, 4, startRow = 2) %>%
   select(State.Course.Code:X6) %>%
   rename(content_area = X6)
 
-ospi_crs15 <- fread(ospi_crs15_fn, skip = 2, header = T, drop = c("V1","V5")) %>%
+ospi_crs16$`State.Course.Code` <- stri_encode(ospi_crs16$`State.Course.Code`, "", "UTF-8")
+ospi_crs16$Name <- stri_encode(ospi_crs16$Name, "", "UTF-8")
+ospi_crs16$Description <- stri_encode(ospi_crs16$Description, "", "UTF-8")
+ospi_crs16$content_area <- stri_encode(ospi_crs16$content_area, "", "UTF-8")
+
+ospi_crs15 <- fread(ospi_crs15_fn, skip = 2, header = T, drop = c("V1","V5"), encoding='UTF-8') %>%
   rename(State.Course.Code = `State Course Code`) %>%
   mutate(State.Course.Code = as.character(State.Course.Code),
          State.Course.Code = str_pad(State.Course.Code, 5, pad = "0"))
+
+ospi_crs15$`State.Course.Code` <- stri_encode(ospi_crs15$`State.Course.Code`, "", "UTF-8")
+ospi_crs15$Name <- stri_encode(ospi_crs15$Name, "", "UTF-8")
+ospi_crs15$Description <- stri_encode(ospi_crs15$Description, "", "UTF-8")
 
 ospi_crs15 <- left_join(ospi_crs15, ospi_crs16 %>%
                           select(State.Course.Code, content_area), by = 'State.Course.Code')
@@ -24,7 +39,7 @@ ospi_crs15 <- left_join(ospi_crs15, ospi_crs16 %>%
 missing <- ospi_crs15 %>%
   filter(is.na(content_area))
 
-rsd_crs <- fread(rsd_crs_fn, na.strings = c("NA", "NULL")) %>%
+rsd_crs <- fread(rsd_crs_fn, na.strings = c("NA", "NULL"), encoding='UTF-8') %>%
   mutate(State.Course.Code = as.character(`State Code`),
          State.Course.Code = str_pad(State.Course.Code, 5, pad = "0"),
          cadr = if_else(`CADR Flag` == 'Yes', 1,0),
@@ -43,7 +58,7 @@ rsd_crs <- rsd_crs %>%
          cadr = if_else(`Course Short` %in% not_cadrs, 0, cadr))
 
 
-clean_train <- fread(clean_train_fn, na.strings = c("NA", "NULL")) %>%
+clean_train <- fread(clean_train_fn, na.strings = c("NA", "NULL"), encoding='UTF-8') %>%
   mutate(State.Course.Code = as.character(State.Course.Code),
          State.Course.Code = str_pad(State.Course.Code, 5, pad = "0"))
 
@@ -208,12 +223,14 @@ clean_fpa <- courses_not_covered[content_area == 'Fine and Performing Arts']
 # re-label some cadr rows 
 cadr_yes <- c(
   'General Band',
-  'AP Studio Art—Two-Dimensional',
   'Dance Repertory'
 )
 
 clean_fpa[, cadr := ifelse(Name %in% cadr_yes, 1, cadr)]
 
+# find 'AP Studio Art—Two-Dimensional' using state course code to work around
+# strings not matching in R b/c of encoding issues
+clean_fpa[, cadr := ifelse(`State.Course.Code` %in% c('05174'), 1, cadr)]
 
 # Communications and Audio/Visual Technology
 clean_comm <- courses_not_covered[content_area == 'Communications and Audio/Visual Technology']

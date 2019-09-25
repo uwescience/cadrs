@@ -9,7 +9,57 @@ library(here)
 
 source(here("settings.R"))
 
-df_h <- read_delim(gr_hist, delim = "|", quote = "",col_names = TRUE, na = c("", "NA", "NULL")) 
+df_h <- read_delim(gr_hist, delim = "|", quote = "",col_names = TRUE, na = c("", "NA", "NULL"),
+  col_types = cols(
+    ReportSchoolYear = col_double(),
+    DistrictCode = col_character(),
+    DistrictName = col_character(),
+    SchoolCode = col_character(),
+    SchoolName = col_character(),
+    LocationID = col_character(),
+    ResearchID = col_double(),
+    TermEndDate = col_date(format = ""),
+    Term = col_character(),
+    CourseID = col_character(),
+    CourseTitle = col_character(),
+    StaffID = col_character(),
+    GradeLevelWhenCourseTaken = col_double(),
+    LetterGrade = col_character(),
+    CreditsAttempted = col_double(),
+    CreditsEarned = col_double(),
+    StateCourseCode = col_character(),
+    StateCourseName = col_character(),
+    ContentAreaCode = col_character(),
+    ContentAreaName = col_character(),
+    APIBCourseCode = col_character(),
+    APIBCourseName = col_character(),
+    CTECIPCode = col_character(),
+    CTECIPName = col_character(),
+    CTEClusterID = col_character(),
+    CTEClusterName = col_character(),
+    CTEPathwayID = col_character(),
+    CTEPathwayName = col_character(),
+    CTEAssessment = col_character(),
+    hasCTEIndustryCertificateFlag = col_double(),
+    CTEVocCompleterFlag = col_double(),
+    CTEDirectTranscriptionAvailableFlag = col_logical(),
+    TechPrepCourseFlag = col_double(),
+    TechPrepProgramAreaCompleterFlag = col_double(),
+    FullCourseDesignationCode = col_character(),
+    InternationalBaccalaureateFlag = col_double(),
+    CollegeattheHighSchoolFlag = col_double(),
+    HonorsFlag = col_double(),
+    AdvancedPlacementFlag = col_double(),
+    RunningStartFlag = col_double(),
+    CollegeAcademicDistributionRequirementsFlag = col_double(),
+    CambridgeProgramFlag = col_double(),
+    OnlineFlag = col_double(),
+    dPassedFlag = col_double(),
+    dTermEndYear = col_double(),
+    dTermEndWeekOfYear = col_double(),
+    dSchoolYear = col_double()
+  )
+)
 
 
 ######

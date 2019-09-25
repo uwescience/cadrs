@@ -1,5 +1,6 @@
 
 library(RSQLite)
+library(readr)
 library(sys)
 library(here)
 
@@ -45,16 +46,20 @@ import_table_using_sqlite_cli <- function(file_path, table_name, sep=",") {
 import_table_using_dbi <- function(file_path, table_name, sep=",", quote="\"", file_encoding="UTF-8") {
 	print(paste("loading", table_name, sep=" "))
 
-	df <- read.csv(file_path
-		,header=TRUE
-		,quote=quote
-		,sep=sep
-		,colClasses=c('character')
-		,check.names=FALSE
-		,as.is=TRUE
-		,na.strings=c('')
-		,fileEncoding=file_encoding
-	)
+	## read.csv seems to choke on utf-8 files sometimes, not sure why. so we use read_delim instead.
+	# df <- read.csv(file_path
+	# 	,header=TRUE
+	# 	,quote=quote
+	# 	,sep=sep
+	# 	,colClasses=c('character')
+	# 	,check.names=FALSE
+	# 	,as.is=TRUE
+	# 	,na.strings=c('')
+	# 	,fileEncoding=file_encoding
+	# )
+	df <- read_delim(file_path, delim=sep, col_types=cols(.default = "c"), quote=quote)
+	print("after read.csv")
+	print(nrow(df))
 	conn <- dbConnect(SQLite(), sqlite_database_path)
 	dbExecute(
 	  conn,
@@ -62,7 +67,7 @@ import_table_using_dbi <- function(file_path, table_name, sep=",", quote="\"", f
 	)
 
 	print(paste("writing to database"))
-	dbWriteTable(conn, table_name, df)
+	dbWriteTable(conn, table_name, df, fileEncoding = file_encoding)
 
 	dbDisconnect(conn)
 	rm(df)
