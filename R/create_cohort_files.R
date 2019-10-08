@@ -9,7 +9,11 @@ source(here("settings.R"))
 exec_sqlite <- function(sql) {
 	args <- sqlite_database_path
 
-	sqlite_fullpath <- paste(Sys.getenv("SQLITE_PATH"), Sys.getenv("SQLITE_EXEC"), sep="/")
+	if(nchar(Sys.getenv("SQLITE_PATH")) > 0) {
+		sqlite_fullpath <- paste(Sys.getenv("SQLITE_PATH"), Sys.getenv("SQLITE_EXEC"), sep="/")
+	} else {
+		sqlite_fullpath <- "sqlite"
+	}
 
 	print("EXECUTING: ")
 	print(sql)
