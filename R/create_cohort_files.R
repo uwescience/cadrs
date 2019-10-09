@@ -4,7 +4,7 @@ library(readr)
 library(sys)
 library(here)
 
-source("/home/joseh/source/cadrs/settings.R")
+source(here("settings.R"))
 
 exec_sqlite <- function(sql) {
 	args <- sqlite_database_path

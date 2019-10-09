@@ -6,7 +6,7 @@ library(openxlsx)
 library(data.table)
 library(here)
 
-source("/home/joseh/source/cadrs/settings.R")
+source(here("settings.R"))
 
 stu_enroll_fn <- enrollment_path
 sch_dim_fn <- dim_school_path

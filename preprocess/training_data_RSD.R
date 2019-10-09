@@ -4,7 +4,7 @@ library(data.table)
 library(stringi)
 library(here)
 
-source("/home/joseh/source/cadrs/settings.R") # When not running using bash R I have to use "source/cadrs/"
+source(here("settings.R"))
 
 ospi_crs17 <- read.xlsx(ospi_crs17_fn, 4, startRow = 2) %>%
   select(State.Course.Code:X6) %>%

@@ -7,7 +7,7 @@ library(openxlsx)
 library(data.table)
 library(here)
 
-source("/home/joseh/source/cadrs/settings.R")
+source(here("settings.R"))
 
 df_h <- read_delim(gr_hist, delim = "|", quote = "",col_names = TRUE, na = c("", "NA", "NULL"),
   col_types = cols(
