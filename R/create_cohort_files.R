@@ -11,8 +11,10 @@ exec_sqlite <- function(sql) {
 
 	if(nchar(Sys.getenv("SQLITE_PATH")) > 0) {
 		sqlite_fullpath <- paste(Sys.getenv("SQLITE_PATH"), Sys.getenv("SQLITE_EXEC"), sep="/")
+	} else if(nchar(Sys.getenv("SQLITE_EXEC")) > 0) {
+		sqlite_fullpath <- Sys.getenv("SQLITE_EXEC")
 	} else {
-		sqlite_fullpath <- "sqlite"
+		sqlite_fullpath <- "sqlite3"
 	}
 
 	print("EXECUTING: ")
