@@ -1,6 +1,6 @@
 .headers on
 .mode csv
-.output output/course_2017_cohort.csv
+.output /home/joseh/source/cadrs/output/course_2017_cohort.csv
 
 DROP VIEW IF EXISTS cohort_17;
 
