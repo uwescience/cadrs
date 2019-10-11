@@ -5,31 +5,82 @@
 library(tidyverse)
 library(openxlsx)
 library(data.table)
+library(here)
 
-gr_hist <- "~/data/cadr_update/hsCourses.txt"
-df_h <- read_delim(gr_hist, delim = "|", quote = "",col_names = TRUE, na = c("", "NA", "NULL")) 
+source(here("settings.R"))
+
+df_h <- read_delim(gr_hist, delim = "|", quote = "",col_names = TRUE, na = c("", "NA", "NULL"),
+  col_types = cols(
+    ReportSchoolYear = col_double(),
+    DistrictCode = col_character(),
+    DistrictName = col_character(),
+    SchoolCode = col_character(),
+    SchoolName = col_character(),
+    LocationID = col_character(),
+    ResearchID = col_double(),
+    TermEndDate = col_date(format = ""),
+    Term = col_character(),
+    CourseID = col_character(),
+    CourseTitle = col_character(),
+    StaffID = col_character(),
+    GradeLevelWhenCourseTaken = col_double(),
+    LetterGrade = col_character(),
+    CreditsAttempted = col_double(),
+    CreditsEarned = col_double(),
+    StateCourseCode = col_character(),
+    StateCourseName = col_character(),
+    ContentAreaCode = col_character(),
+    ContentAreaName = col_character(),
+    APIBCourseCode = col_character(),
+    APIBCourseName = col_character(),
+    CTECIPCode = col_character(),
+    CTECIPName = col_character(),
+    CTEClusterID = col_character(),
+    CTEClusterName = col_character(),
+    CTEPathwayID = col_character(),
+    CTEPathwayName = col_character(),
+    CTEAssessment = col_character(),
+    hasCTEIndustryCertificateFlag = col_double(),
+    CTEVocCompleterFlag = col_double(),
+    CTEDirectTranscriptionAvailableFlag = col_logical(),
+    TechPrepCourseFlag = col_double(),
+    TechPrepProgramAreaCompleterFlag = col_double(),
+    FullCourseDesignationCode = col_character(),
+    InternationalBaccalaureateFlag = col_double(),
+    CollegeattheHighSchoolFlag = col_double(),
+    HonorsFlag = col_double(),
+    AdvancedPlacementFlag = col_double(),
+    RunningStartFlag = col_double(),
+    CollegeAcademicDistributionRequirementsFlag = col_double(),
+    CambridgeProgramFlag = col_double(),
+    OnlineFlag = col_double(),
+    dPassedFlag = col_double(),
+    dTermEndYear = col_double(),
+    dTermEndWeekOfYear = col_double(),
+    dSchoolYear = col_double()
+  )
+)
 
 
 ######
 # STATE COURSE CATALOGUE FILES YEARLY
 # Load xlsx file from ospi
-ospi_crs17_fn <- "~/data/cadrs/2016-17StateCourseCodes.xlsx"
-
 ospi_crs17 <- read.xlsx(ospi_crs17_fn, 4, startRow = 2) %>%
   select(State.Course.Code:X6) %>%
   rename(content_area = X6)
 #####
-ospi_crs16_fn <- "~/data/cadrs/2015-16-StateCourseCodes.xlsx"
+
 
 ospi_crs16 <- read.xlsx(ospi_crs16_fn, 4, startRow = 2) %>%
   select(State.Course.Code:X6) %>%
   rename(content_area = X6)
 ####
-ospi_crs15_fn <- "~/data/cadrs/2014_15_StateCourseCodes.csv"
-ospi_crs15 <- fread(ospi_crs15_fn, skip = 2, header = T, drop = c("V1","V5"))
 
-ospi_crs14_fn <- "~/data/cadrs/2013_14_StateCourseCodes.csv"
-ospi_crs14 <- fread(ospi_crs14_fn, skip = 2, header = T, drop = c("V1","V5"))
+# not used in this script, so Jeff commented this out
+#ospi_crs15 <- fread(ospi_crs15_fn, skip = 2, header = T, drop = c("V1","V5"))
+
+# not used in this script, so Jeff commented this out
+#ospi_crs14 <- fread(ospi_crs14_fn, skip = 2, header = T, drop = c("V1","V5"))
 
 # Create unique school courses from student file by year and attach course discriptions
 names(df_h)
@@ -397,4 +448,4 @@ cadrs_training_c <- cadrs_training_c %>%
 
 table(cadrs_training_c$cadrs)
 
-write_csv(cadrs_training_c, path = "~/data/cadrs/cadrs_training.csv")
+write_csv(cadrs_training_c, path = cadrs_training_path)

@@ -1,8 +1,11 @@
 # HANDLING ELECTIVES THAT SATISFY CADR REQS WHEN AGGREGATING 
 library(tidyverse)
 library(data.table)
+library(here)
 
-results_fn <- "/home/joseh/data/svm_cadr_student_predictions_CV.csv"
+source(here("settings.R"))
+
+results_fn <- svm_predictions_path
 # results_cadr_fn = "/home/ubuntu/data/db_files/cadrs_results_20082019.csv"
 
 results <- fread(results_fn, na.strings = c("NA", "NULL", ""))
@@ -102,7 +105,7 @@ agg_results <- final_table %>%
 
 ## Using Tukwila as a test case 
 # attach district membership 
-stu_enroll_fn <-"~/data/cadr_update/enrollments.txt"
+stu_enroll_fn <- enrollment_path
 stu_enroll <- fread(stu_enroll_fn, na.strings = c("NA", "NULL"))
 
 names(stu_enroll)

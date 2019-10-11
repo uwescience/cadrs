@@ -107,7 +107,6 @@ str(c_name)
 rm(crs_content)
 gc()
 # Levenshtein Distance
-install.packages('stringdist')
 library(stringdist)
 
 uniquemodels <- as.character(c_name$c_name)

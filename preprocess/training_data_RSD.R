@@ -1,28 +1,37 @@
 library(tidyverse)
 library(openxlsx)
 library(data.table)
+library(stringi)
+library(here)
 
-# STATE COURSE CATALOGUE FILES YEARLY and RSD
-ospi_crs17_fn <- "~/data/cadrs/2016-17StateCourseCodes.xlsx"
-ospi_crs16_fn <- "~/data/cadrs/2015-16-StateCourseCodes.xlsx"
-ospi_crs15_fn <- "~/data/cadrs/2014_15_StateCourseCodes.csv"
-# RSD file 
-rsd_crs_fn <- "~/data/rsd_unique_3.csv"
-# cleaned_up training
-clean_train_fn <- "~/data/ospi_stud_clean.csv"
+source(here("settings.R")) # When not running using bash R I have to use "source/cadrs/"
 
 ospi_crs17 <- read.xlsx(ospi_crs17_fn, 4, startRow = 2) %>%
   select(State.Course.Code:X6) %>%
   rename(content_area = X6)
 
+ospi_crs17$`State.Course.Code` <- stri_encode(ospi_crs17$`State.Course.Code`, "", "UTF-8")
+ospi_crs17$Name <- stri_encode(ospi_crs17$Name, "", "UTF-8")
+ospi_crs17$Description <- stri_encode(ospi_crs17$Description, "", "UTF-8")
+ospi_crs17$content_area <- stri_encode(ospi_crs17$content_area, "", "UTF-8")
+
 ospi_crs16 <- read.xlsx(ospi_crs16_fn, 4, startRow = 2) %>%
   select(State.Course.Code:X6) %>%
   rename(content_area = X6)
 
-ospi_crs15 <- fread(ospi_crs15_fn, skip = 2, header = T, drop = c("V1","V5")) %>%
+ospi_crs16$`State.Course.Code` <- stri_encode(ospi_crs16$`State.Course.Code`, "", "UTF-8")
+ospi_crs16$Name <- stri_encode(ospi_crs16$Name, "", "UTF-8")
+ospi_crs16$Description <- stri_encode(ospi_crs16$Description, "", "UTF-8")
+ospi_crs16$content_area <- stri_encode(ospi_crs16$content_area, "", "UTF-8")
+
+ospi_crs15 <- fread(ospi_crs15_fn, skip = 2, header = T, drop = c("V1","V5"), encoding='UTF-8') %>%
   rename(State.Course.Code = `State Course Code`) %>%
   mutate(State.Course.Code = as.character(State.Course.Code),
          State.Course.Code = str_pad(State.Course.Code, 5, pad = "0"))
+
+ospi_crs15$`State.Course.Code` <- stri_encode(ospi_crs15$`State.Course.Code`, "", "UTF-8")
+ospi_crs15$Name <- stri_encode(ospi_crs15$Name, "", "UTF-8")
+ospi_crs15$Description <- stri_encode(ospi_crs15$Description, "", "UTF-8")
 
 ospi_crs15 <- left_join(ospi_crs15, ospi_crs16 %>%
                           select(State.Course.Code, content_area), by = 'State.Course.Code')
@@ -30,19 +39,26 @@ ospi_crs15 <- left_join(ospi_crs15, ospi_crs16 %>%
 missing <- ospi_crs15 %>%
   filter(is.na(content_area))
 
-rsd_crs <- fread(rsd_crs_fn, na.strings = c("NA", "NULL")) %>%
+rsd_crs <- fread(rsd_crs_fn, na.strings = c("NA", "NULL"), encoding='UTF-8') %>%
   mutate(State.Course.Code = as.character(`State Code`),
          State.Course.Code = str_pad(State.Course.Code, 5, pad = "0"),
          cadr = if_else(`CADR Flag` == 'Yes', 1,0),
          State.Course.Code = str_remove(State.Course.Code, "[A-Z]$"))
 
-rsd_crs[61,10]<- 1
-rsd_crs[68,10]<- 0
-rsd_crs[67,10]<- 0
-rsd_crs[36,10]<- 0
-rsd_crs[139,10]<- 0
+# Some course CADR classes not correct, fix here using exact string match
+not_cadrs <- c(
+  'FIN ALGEBRA-A',
+  'COMPUTER PRO-I',
+  'CREATIVE WRIT',
+  'IB BUS&MAN HL-A'
+)
 
-clean_train <- fread(clean_train_fn, na.strings = c("NA", "NULL")) %>%
+rsd_crs <- rsd_crs %>%
+  mutate(cadr = if_else(`Course Short` == 'TRIGONOMETRY', 1, cadr),
+         cadr = if_else(`Course Short` %in% not_cadrs, 0, cadr))
+
+
+clean_train <- fread(clean_train_fn, na.strings = c("NA", "NULL"), encoding='UTF-8') %>%
   mutate(State.Course.Code = as.character(State.Course.Code),
          State.Course.Code = str_pad(State.Course.Code, 5, pad = "0"))
 
@@ -96,7 +112,9 @@ ospi_crs <- bind_rows(
 ) %>%
   unique() %>%
   select(-Subject.Area.Code, -`Type.(AP/IB)`)
-# write_csv(ospi_crs, "/home/ubuntu/data/db_files/preprocess/state_courses.csv")
+
+write_csv(ospi_crs, dim_course_path)
+
 # CLEAN UP RSD FILE 
 # Begin with descriptions add course name in description
 names(rsd_crs)
@@ -179,7 +197,8 @@ table(courses_not_covered[,content_area])
 
 clean_soc <- courses_not_covered[content_area == 'Social Sciences and History']
 
-clean_soc[10,4] <- 1
+# correct cadr flag error
+clean_soc[, cadr := ifelse(Name == 'IB Islamic History', 1, cadr)]
 
 ospi_rsd_train <- bind_rows(
   ospi_rsd_train,
@@ -202,9 +221,16 @@ table(courses_not_covered[,content_area])
 clean_fpa <- courses_not_covered[content_area == 'Fine and Performing Arts']
 
 # re-label some cadr rows 
-clean_fpa[7,4] <- 1
-clean_fpa[27,4] <- 1
-clean_fpa[28,4] <- 1
+cadr_yes <- c(
+  'General Band',
+  'Dance Repertory'
+)
+
+clean_fpa[, cadr := ifelse(Name %in% cadr_yes, 1, cadr)]
+
+# find 'AP Studio Art—Two-Dimensional' using state course code to work around
+# strings not matching in R b/c of encoding issues
+clean_fpa[, cadr := ifelse(`State.Course.Code` %in% c('05174'), 1, cadr)]
 
 # Communications and Audio/Visual Technology
 clean_comm <- courses_not_covered[content_area == 'Communications and Audio/Visual Technology']
@@ -217,8 +243,14 @@ ospi_rsd_train <- bind_rows(
 )
 
 #journalism
-ospi_rsd_train[2,4] <- 1
-ospi_rsd_train[207,4] <- 1
+cadr_yes <- c(
+  'JOURNALISM-A',
+  'Journalism'
+)
+
+ospi_rsd_train <- data.table(ospi_rsd_train)
+
+ospi_rsd_train[, cadr := ifelse(Name %in% cadr_yes, 1, cadr)]
 
 # Life and Physical Sciences 
 
@@ -245,7 +277,7 @@ courses_not_covered <- clean_train %>%
   mutate(dist_code = NA,
          dist_description= NA) %>%
   select(dist_code, State.Course.Code, Name, cadr=cadrs, dist_description, Description, content_area) %>%
-  filter(!State.Course.Code %in% ospi_rsd_train[, "State.Course.Code"])
+  filter(!State.Course.Code %in% ospi_rsd_train[, State.Course.Code])
 
 courses_not_covered <- data.table(courses_not_covered)
 
@@ -429,4 +461,4 @@ ospi_rsd_train <- ospi_rsd_train %>%
   mutate(cadr = if_else(Name %in% cr_name_sub, 1, cadr))
 
 
-write_csv(ospi_rsd_train, "~/data/cadrs/cadrs_training_rsd.csv")
+write_csv(ospi_rsd_train, rsd_cadrs_training_path)
