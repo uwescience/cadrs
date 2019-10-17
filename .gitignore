@@ -2,4 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
+packrat/lib*/
+packrat/src
+data/
+output/
 .vscode
+settings.R
+python_env/
