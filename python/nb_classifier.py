@@ -93,10 +93,10 @@ nb = Pipeline([('vect', CountVectorizer()),
                ('tfidf', TfidfTransformer()),
                ('clf', MultinomialNB()),
               ])
-nb.fit(x_train, y_train)
 
 
-from sklearn.metrics import classification_report
+from sklearn.metrinb.fit(x_train, y_train)
+cs import classification_report
 y_pred = nb.predict(x_test)
 
 print('accuracy %s' % accuracy_score(y_pred, y_test))

@@ -156,6 +156,6 @@ pred_cols.head
 
 combined_pred = crs_student.merge(pred_cols, left_index=True, right_index=True)
 combined_pred.head
-combined_pred.to_csv('/home/joseh/data/svm_cadr_student_predictions_CV.csv', encoding='utf-8', index=False)
+combined_pred.to_csv('/home/joseh/data/svm_cadr_student_predictions_CV_1016.csv', encoding='utf-8', index=False)
 
 
