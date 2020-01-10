@@ -68,20 +68,16 @@ max(num_words)
 # Clean up text
 REPLACE_BY_SPACE_RE = re.compile('[/(){}\[\]\|@,;]')
 BAD_SYMBOLS_RE = re.compile('[^0-9a-z #+_]')
-# STOPWORDS = set(stopwords.words('english'))
 REM_GRADE = re.compile(r'\b[0-9]\w+')
-REPLACE_NUM_RMN = re.compile(r'([0-9]+)|(^IX|IV|V?I{0,3}$)')
-# re.sub(r'\b[0-9]\w+|([0-9]+)|([IVXLCDM]+)', '', test_2)
-#test = 'English Language Arts IV 10th grade Vietnam'
-#re.sub(r'(^IX|IV|V?I{0,3}$)', '', test)
+REPLACE_NUM_RMN = re.compile(r"([0-9]+)|(i[xv]|v?i{0,3})$")
+
 
 def clean_text(text):
-    # text = REM_GRADE.sub('', text)
-    # text = REPLACE_NUM_RMN.sub('', text)
     text = text.lower() # lowercase text
+    text = REM_GRADE.sub('', text)
+    text = REPLACE_NUM_RMN.sub('', text)
     text = REPLACE_BY_SPACE_RE.sub(' ', text)
     text = BAD_SYMBOLS_RE.sub(' ', text) 
-    # text = ' '.join(word for word in text.split() if word not in STOPWORDS)
     text = ' '.join(word for word in text.split() if len(word)>1)
     return text
 
