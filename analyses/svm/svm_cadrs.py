@@ -49,17 +49,25 @@ path_to_save = path_root
 
 
 crs_cat =  pd.read_csv(os.path.join(path_to_cadrs,'cadrs_training_rsd.csv'), delimiter = ',')
-print('The shape: %d x %d' % crs_cat.shape)
-crs_cat.columns
 
-crs_cat.shape
-crs_cat.head
+# handle json
+def get_metadata_dict(metadata_file):
+    metadata_handle = open(metadata_file)
+    metadata = json.loads(metadata_handle.read())
+    return metadata
+# load Json
+crs_updates = get_metadata_dict(os.path.join(metadata_path, 'mn_crs_updates.json'))
+crs_abb = get_metadata_dict(os.path.join(metadata_path, 'course_abb.json'))
+# add regex
+d = {r'\b{}\b'.format(k):v for k, v in crs_abb.items()}
 
+# apply updates from Json
+crs_cat['cadr'].describe()
+crs_cat['cadr']= crs_cat['Name'].map(crs_updates).fillna(crs_cat['cadr'])
+crs_cat['cadr'].describe()  
 
 # Create lists of texts and labels 
 text =  crs_cat['Name']
-len(text)
-
 labels = crs_cat['cadr']
 
 num_words = [len(words.split()) for words in text]
@@ -82,10 +90,12 @@ def clean_text(text):
     return text
 
 text = text.apply(clean_text)
+text = text.replace(to_replace = d, regex=True)
 
 text.apply(lambda x: len(x.split(' '))).sum()
 text[1:50]
-#####
+
+# beggin algorithm prep
 x_train, x_test, y_train, y_test = train_test_split(text, labels, test_size=0.2, random_state = 42)
 
 
