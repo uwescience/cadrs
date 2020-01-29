@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import csv
 import json
 import numpy as np
@@ -43,9 +44,9 @@ this_file_path = os.path.abspath(__file__)
 project_root = os.path.split(os.path.split(os.path.split(this_file_path)[0])[0])[0]
 path_root = os.path.join(project_root, "data") + '/'
 path_to_cadrs = path_root + 'cadrs/'
+path_to_metadata = path_root + 'metadata/'
 path_to_pretrained_wv = path_root
-path_to_plot = path_root
-path_to_save = path_root
+
 
 
 crs_cat =  pd.read_csv(os.path.join(path_to_cadrs,'cadrs_training_rsd.csv'), delimiter = ',')
@@ -56,8 +57,8 @@ def get_metadata_dict(metadata_file):
     metadata = json.loads(metadata_handle.read())
     return metadata
 # load Json
-crs_updates = get_metadata_dict(os.path.join(metadata_path, 'mn_crs_updates.json'))
-crs_abb = get_metadata_dict(os.path.join(metadata_path, 'course_abb.json'))
+crs_updates = get_metadata_dict(os.path.join(path_to_metadata, 'mn_crs_updates.json'))
+crs_abb = get_metadata_dict(os.path.join(path_to_metadata, 'course_abb.json'))
 # add regex
 d = {r'\b{}\b'.format(k):v for k, v in crs_abb.items()}
 
