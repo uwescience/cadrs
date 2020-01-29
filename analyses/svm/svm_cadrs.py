@@ -43,7 +43,7 @@ if sys.platform == 'win32' and in_virtual_env and sys.version_info.major == 3 an
 this_file_path = os.path.abspath(__file__)
 project_root = os.path.split(os.path.split(os.path.split(this_file_path)[0])[0])[0]
 path_root = os.path.join(project_root, "data") + '/'
-path_to_metadata = os.path.join(project_root, "'metadata") + '/'
+path_to_metadata = os.path.join(project_root, "metadata") + '/'
 path_to_cadrs = path_root + 'cadrs/'
 path_to_pretrained_wv = path_root
 
