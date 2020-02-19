@@ -160,6 +160,7 @@ num_words_2 = [len(words.split()) for words in text_out]
 max(num_words_2)
 
 text = text_out.apply(clean_text)
+text = text.replace(to_replace = d, regex=True)
 
 text.apply(lambda x: len(x.split(' '))).sum()
 

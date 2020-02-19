@@ -51,13 +51,18 @@
   "astro":"astronomy",
   "commun":"communications",
   "spch":"speech",
-  "begellwriting":"ell writing",
+  "begellwriting":"english language learners writing",
+  "begellreading":"english language learners reading",
+  "ellconversation":"english language learners conversation",
+  "ellintlgarts":"english language learners language arts",
+  "ellinterskills":"english language learners skills",
   "am":"american",
   "eld":"english language learners",
   "cte":"career and technical education",
   "hist":"history",
   "h":"honors",
   "coe":"collection of evidence",
-  "sci": "science",
-  "env": "enviromental"
+  "sci":"science",
+  "env":"enviromental",
+  "edu":"education"
 }
