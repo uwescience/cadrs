@@ -1,0 +1,52 @@
+{
+    "cadr_categories": {
+        "Foreign Language and Literature": "fll_cadr",
+        "Social Sciences and History": "ssh_cadr",
+        "Fine and Performing Arts":"fpa_cadr",
+        "Life and Physical Sciences":"sci_cadr",
+        "Life and Physical Science":"sci_cadr",
+        "Mathematics":"math_cadr",
+        "English Language and Literature":"el_cadr"
+    },
+    "other_cadr": {
+        "Communications and Audio/Visual Technology":"elective_cadr",
+        "Computer and Information Sciences":"elective_cadr",
+        "Business and Marketing":"elective_cadr",
+        "Health Care Sciences":"elective_cadr"
+    },
+    "non_cadr": {
+        "Miscellaneous":"non_cadr",
+        "Religious Education and Theology":"non_cadr",
+        "Public, Protective, and Government Service":"non_cadr",
+        "Physical, Health, and Safety Education":"non_cadr",
+        "Nonsubject Specific":"non_cadr",
+        "Agriculture, Food, and Natural Resources":"non_cadr",
+        "Military Science":"non_cadr",
+        "Manufacturing":"non_cadr",
+        "Architecture and Construction":"non_cadr",
+        "Human Services":"non_cadr",
+        "Hospitality and Tourism":"non_cadr",
+        "Engineering and Technology":"non_cadr",
+        "Transportation, Distribution and Logistics":"non_cadr"
+    },
+    "english_supplement" : [
+        "drama as literature", 
+        "public speaking", 
+        "debate", 
+        "journalistic writing", 
+        "business english",
+        "english as a second language"
+    ],
+    "terminal_based_qual_math": [
+        "algebra ii",
+        "intermediat algebra",
+        "integrated math iii",
+        "pre calculus", 
+        "math analysis", 
+        "calculus"
+    ],
+    "language_keys": [
+        "ii",
+        "2"
+    ]
+}

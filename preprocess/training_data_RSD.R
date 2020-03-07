@@ -335,7 +335,7 @@ datalist = list()
 cadr = 1
 
 for (i in sci_cad) {
-  dat <- data.frame(dist_code = NA, State.Course.Code = NA, Name =i, cadr=cadr, dist_description=NA, Description=NA, content_area='Life and Physical Science')
+  dat <- data.frame(dist_code = NA, State.Course.Code = NA, Name =i, cadr=cadr, dist_description=NA, Description=NA, content_area='Life and Physical Sciences')
   datalist[[i]] <- dat
 }
 sci_cr = do.call(rbind, datalist)

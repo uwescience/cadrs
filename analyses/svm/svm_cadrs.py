@@ -18,7 +18,6 @@ from sklearn.model_selection import train_test_split, cross_val_score, GridSearc
 from gensim.models.word2vec import Word2Vec
 
 import os
-import os.path
 import re
 import random
 import operator
@@ -42,11 +41,11 @@ if sys.platform == 'win32' and in_virtual_env and sys.version_info.major == 3 an
 
 this_file_path = os.path.abspath(__file__)
 project_root = os.path.split(os.path.split(os.path.split(this_file_path)[0])[0])[0]
+
 path_root = os.path.join(project_root, "data") + '/'
 path_to_metadata = os.path.join(project_root, "metadata") + '/'
 path_to_cadrs = path_root + 'cadrs/'
 path_to_pretrained_wv = path_root
-
 
 
 crs_cat =  pd.read_csv(os.path.join(path_to_cadrs,'cadrs_training_rsd.csv'), delimiter = ',')
@@ -123,7 +122,7 @@ parameters = {
 }
 
 gs_clf = GridSearchCV(sgd, parameters, cv=5, iid=False, n_jobs=-1)
-gs_clf.fit(text, labels)
+gs_clf.fit(x_train, y_train)
 
 gs_clf.best_score_
 for param_name in sorted(parameters.keys()):
@@ -135,7 +134,7 @@ gs_clf.cv_results_
 test_pred = gs_clf.predict(x_test)
 
 pred_cols = pd.DataFrame(test_pred, columns = ['p_CADRS'])
-
+  
 
 pred_cols.head
 
