@@ -68,32 +68,17 @@ crs_cat["content_area"].isna().mean()
 check = crs_cat["content_area"].isna()
 crs_cat[check] 
 # mostly foreign languge, drop for now and fix if this apporach is promising 
-crs_cat.dropna(subset = ["content_area"], inplace=True)
-crs_cat = crs_cat.reset_index()
-
 # we want to map the subject categories to something we can manage 
 cadr_sub.get("cadr_categories") 
 cadr_sub.get("other_cadr") 
 cadr_sub.get("non_cadr") 
 
 # map on to new column 
-
-crs_cat["subject_class"] = crs_cat["content_area"]
-crs_cat["subject_class"] = crs_cat["content_area"].replace(cadr_sub.get("cadr_categories"))
-crs_cat["subject_class"] = crs_cat["subject_class"].replace(cadr_sub.get("other_cadr"))
-crs_cat["subject_class"] = crs_cat["subject_class"].replace(cadr_sub.get("non_cadr"))
-
-pd.crosstab(crs_cat.subject_class, crs_cat.cadr).sort_values(1, ascending=False)
-
-# we need to change the non cadr subject specific to non_cadr categories
-
-my_query_index = crs_cat.query('cadr == 0').index
-crs_cat.iloc[my_query_index, 8] = "non_cadr"
-pd.crosstab(crs_cat.subject_class, crs_cat.cadr).sort_values(1, ascending=False)
+multi = tp.multi_class_df(crs_cat, cadr_sub)
 
 # now we can use the subject class as a "classifier"
-text =  crs_cat['Name']
-labels = crs_cat['subject_class']
+text =  multi['Name']
+labels = multi['subject_class']
 
 num_words = [len(words.split()) for words in text]
 max(num_words)
@@ -104,9 +89,12 @@ d = tp.update_data(crs_cat, json_abb=crs_abb) #fix the weird procedure
 
 text = text.replace(to_replace = d, regex=True)
 
-text.apply(lambda x: len(x.split(' '))).sum()
-text[1:50]
+# we might want to get rid of duplication after standardization
+dedup_fl = pd.concat([text,labels], axis = 1).drop_duplicates()
+dedup_fl['subject_class'].value_counts()
 
+text = dedup_fl['Name']
+labels = dedup_fl['subject_class']
 # beggin algorithm prep
 x_train, x_test, y_train, y_test = train_test_split(text, labels, test_size=0.2, random_state = 42)
 
@@ -117,6 +105,15 @@ multinom = Pipeline([
                 ('tfidf', TfidfTransformer()),
                 ('multiclass', MultinomialNB()),
                ])
+### SVM
+from sklearn.linear_model import SGDClassifier
+
+sgd = Pipeline([('vect', CountVectorizer()),
+                ('tfidf', TfidfTransformer()),
+                ('clf', SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, random_state=42, max_iter=5, tol=None)),
+               ])
+sgd.fit(x_train, y_train)
+y_pred = sgd.predict(x_test)
 
 ###### Look at outputs without parameters
 multinom.fit(x_train, y_train)
