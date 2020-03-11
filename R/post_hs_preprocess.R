@@ -11,20 +11,31 @@ enr <- read_delim(enr_fn, delim = "|", col_names = TRUE, na = c("", "NA", "NULL"
 names(enr)
 
 hs_grads = enr %>% 
-  filter(dGraduate == 1) %>%
+  filter(dGraduate == 1,
+         ExpectedGradYear == 2017) %>%
   select(ResearchID, dGraduate,ExpectedGradYear) %>%
   unique()
 
+nsc_sub <- nsc %>%
+  filter(ResearchID %in% agg_results$ResearchID)
 
-# Enrollment date span 
-library(lubridate)
+str(nsc_sub$EnrollmentBegin)
 
-summary(nsc$EnrollmentBegin)
-min(nsc$EnrollmentBegin, na.rm=T)
+nsc %>%
+  filter(ResearchID == 1000511)
+# agg results only get student with complete high school records!!!!
+# right now there are some that don't have this create a flag 
 
-nsc_enroll <- nsc %>% 
+test2 <- agg_results %>%
+  filter(ResearchID == 1000511)
+test3 <- results %>%
+  filter(ResearchID == 1000511)
+
+tt <- nsc_sub %>%
+  filter(v2year4year== 4) %>%
+  filter(EnrollmentBegin >= as.Date('2017-01-01') & EnrollmentBegin <= as.Date('2017-12-31')) %>%
   group_by(ResearchID) %>%
-  slice(which.min(EnrollmentBegin))
+  summarise(n = n())
+  mutate(EnrollmentBegin = as.Date(EnrollmentBegin)) %>%
+  filter(EnrollmentBegin >= as.Date('2017-01-01'))
 
-table(nsc_enroll$v2year4year)
-sum(is.na(nsc_enroll$v2year4year))

@@ -24,7 +24,7 @@ dim_sch_rmp <- sch_dim %>%
 # get cohort of 2017 HS grads 
 hs_grad_id <- stu_dim %>%
   filter(AnyGraduate == 1,
-         GradReqYear %in% c(2017)) %>%
+         GradReqYear %in% c(2016,2017,2018)) %>%
   select(ResearchID) 
 
 # look at only the courses of folks who graduated in 2017
@@ -39,6 +39,22 @@ crs_hs_grad <- crs_hs_grad %>%
   mutate(StateCourseCode = as.character(StateCourseCode),
           StateCourseCode = str_pad(StateCourseCode, 5, pad = "0")) %>%
   unique()
+
+names(crs_hs_grad)
+courses <- crs_hs_grad %>%
+  select(StateCourseCode,CourseTitle,cadr_ccer) %>%
+  unique()
+  
+ospi_crs17_fn <- "~/data/cadrs/2016-17StateCourseCodes.xlsx"
+
+ospi_crs17 <- read.xlsx(ospi_crs17_fn, 4, startRow = 2) %>%
+  select(State.Course.Code:X6) %>%
+  rename(content_area = X6) %>%
+  select(State.Course.Code, Name, content_area)
+names(ospi_crs17)
+
+test <- left_join(courses, ospi_crs17, by = c("StateCourseCode"="State.Course.Code"))
+write.csv(test, "~/data/cadrs/course_uni.csv")
 
 rm(gr_hist)
 rm(stu_dim)
